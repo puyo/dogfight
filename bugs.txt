@@ -1,0 +1,56 @@
+Known Bugs in DOGFIGHT v1.0  Gregory McIntyre 1997
+--------------------------------------------------
+
+NOTE: This is a plain ASCII text file and is best viewed using EDIT.COM
+
+  This file is a list of known bugs in Dogfight. If you find a bug that
+is not listed here, please email Greg (gregm@pcug.org.au [1]) with a short
+description of the problem. He will get around to fixing it eventually.
+
+
+KNOWN BUGS
+----------
+
+*   Vehicles which have negative minimum speeds and positive maximum speeds
+  may occasionally not be able to return to rest if the max or min speeds
+  are not divisible by the acceleration.
+
+*   Vehicles that pass over the right edge of the screen may suddenly
+  appear on the other side, because the coodinate of the plane that is
+  checked is the top left corner of the plane, and therefore the last
+  thing to go off the screen when the vehicle passes out of the right side.
+  The game will reset this x-coodinate to zero, making the plane 'appear'
+  on the left.
+    What *should* happen is that planes scroll smoothly on and off
+  either side.
+
+*   Lasers do not work properly. I am still working on a decent alogarithm
+  to check points along a line for collision detection.
+
+*   The screen capture works, but saves more of the screen than there is!
+  You will get a larger file that contains static where the screen
+  "wasn't".
+
+
+THINGS WHICH ARE NOT BUGS (but may seem to be... odd)
+-----------------------------------------------------
+
+*   If some of the menu options don't seem to work, it is because I have
+  not implemented them yet!
+
+*   If a parachute is already plumetting towards the ground and you turn
+  Coralie Mode on, there will still be an awful splat - Coralie Mode
+  only turns off the parachute collision detection.
+
+*   There is no sound... yet.
+
+*   The range of planes and backgrounds is extremely limited and will be
+  much expanded. I mean, face it, it isn't really a choice yet!
+
+FOOTNOTES
+---------
+
+[1] Email no longer valid.
+
+-----------
+End of file

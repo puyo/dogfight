@@ -1,0 +1,20 @@
+= Dogfight, 1997
+
+This was my year 11 computing project at high school. It is a single-screen,
+side viewed, bi-plane dogfighting game for 1-4 players (crowding around a
+keyboard). It is written in C and uses the Allegro game library.
+
+== Disclaimer
+
+I wrote this program when I was learning the ropes of C. It is ugly and
+amatuerish C code, but I don't want to fix it up too much because it has
+nostaligic value to me, just the way it is. I chuckle whenever I read
+it. It reminds me how far I've come as a programmer.
+
+As of writing, I have fixed the obvious crashing, segfaults or bus errors and
+made it run smoothly on a modern computer. However, it would not surprise me if
+there were crashes or memory leaks related to sloppy memory and pointer
+management.
+
+The email address gregm@pcug.org.au is no longer in use. I left it there for
+posterity. You can find me at http://github.com/puyo/

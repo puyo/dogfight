@@ -1,0 +1,18 @@
+DOGFIGHT v1.0  Gregory McIntyre 1997
+------------------------------------
+
+This file contains the latest information on the planes, backdrops, etc
+stored in the datafile, so that you may set options in the configuration
+file.
+
+
+POSSIBLE VALUES FOR DATAFILE RELATED OBJECTS
+
+planes          0-2 (3)
+
+backdrops       0   (1)
+                    
+clouds          0   (1)
+
+-----------
+End of file

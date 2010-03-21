@@ -1,0 +1,209 @@
+Documentation for DOGFIGHT v1.0  Gregory McIntyre 1997
+------------------------------------------------------
+
+NOTE: This is a plain ASCII text file and is best viewed using EDIT.COM
+
+FOREWORD
+
+          Dogfight is a dogfighting game for two to four players, featuring
+        different vehicles and backdrops. It was designed with the view that
+        a good game is fast, customisable, and more often than not,
+        multiplayer. Efforts have been made to include as many options and
+        give the player as much freedom as possible. All practical
+        suggestions are welcome, and can be sent to gregm@pcug.org.au [1], 
+        but please, I am a student and my time is precious.
+          Dogfight was created as a year 11 computing assignment for
+        Procedual Language Programming 2B at Narrabundah College. Thanks
+        go to my teacher Coralie Walker, for allowing me to extend my
+        knowledge and experience with C by doing this assignment.
+
+
+CONTENTS
+
+	SECTION 1	Player controls
+	SECTION 2	Player variables
+	SECTION 3	Other features
+        SECTION 4       Notes
+        SECTION 5       Credits
+
+
+
+SECTION 1
+---------
+
+Player controls
+
+In future versions, player controls may be set in the configuration file.
+
+	Player 1
+		up		UP ARROW
+		down		DOWN ARROW
+		turn left	LEFT ARROW
+		turn right	RIGHT ARROW
+		fire		CTRL
+
+	Player 2
+		up		W
+		down		S
+		turn left	A
+		turn right	D
+		fire		Q
+	
+	Player 3
+		up		Y
+		down		H
+		turn left	G
+		turn right	J
+		fire		T
+
+	Player 4
+		up		P
+		down		;
+		turn left	L
+		turn right	'
+		fire		L
+
+Other controls
+
+	pause/help			F1
+	Coralie Mode on/off	F2
+	(blood mode)
+	quit current game		ESC
+	
+
+
+
+SECTION 2
+---------
+
+Player variables
+
+These may be set in the options screens and the configuration file. If they are set in the configuration file, they are not checked before they are used by the game. Although this provides you with more freedom, you *must* know the limits of what may be done.
+
+GENERAL OPTIONS
+invincibility_life	how many frames invincibility will last
+				(0 <= invincibility_life <= 255)
+explosion_speed         time taken for vehicles to explode
+                        (will be 8 * explosion_speed) because there are 8
+                        frames of animation in an explosion
+				(0 <= explosion_speed <= 255)
+coralie_mode            set this to true (non-zero) to make the game
+                        safe and nice, or false (zero) to leave the
+                        violence intact.
+
+LEVEL OPTIONS
+gravity			only effects parachutes and splats
+				(unsure)
+cloud_type*             which 'cloud' graphic to display
+				(depends on datafile - see limits.txt)
+backdrop*               which backdrop to display
+				(depends on datafile - see limits.txt)
+
+VEHICLE OPTIONS
+vehicle			which vehicle to use
+				(depends on datafile - see limits.txt)
+turn_speed              turning speed measured in radians
+				(0 <= turn_speed <= pi)
+acceleration		vehicle acceleration (added to speed per frame)
+				(0 <= acceleration <= 255)
+min_speed               vehicle's minimum speed (if negative, vehicle can
+                        travel in reverse)
+				(unsure)
+max_speed               vehicles's maximum speed
+                                (0 <= max_speed <= 255)
+num_of_shots            number of shots available at any one time (shots
+                        are replenished)
+				(0 <= num_of_shots <= 255)
+shot_life               how many frames a shot will last
+				(0 <= shot_life <= 255)
+shot_lag                how many frames before another shot can be fired
+				(0 <= shot_lag <= 255)
+shot_base_speed         added to player's speed to find the actual speed of
+                        the shot
+				(0 <= shot_base_speed <= 255)
+laser_length            the length of laser shots in pixels (only used if a
+                        vehicle that uses lasers is being used)
+				(0 <= laser_length <= 255)
+
+* These *must* exist in the datafile. If you are unsure, please refer
+  to the file limits.txt to see the latest ranges of vehicles, etc
+
+
+SECTION 3
+---------
+
+Other features
+
+These are extra notes on features that may be necessary.
+
+
+Parachutes
+          If you are using bi-planes, and a plane is shot down, a parachute
+        will appear. When this is shot down, the player will fall to an
+        untimely death on the bottom of the screen.
+
+
+Coralie Mode
+          This is basically the 'nice' mode. If you are upset by the
+        over-imaginative graphics when a player hits the ground, press F2
+        to turn them off. When your mummy walks out of the room, you can
+        turn them back on again with F2.
+
+
+Lasers
+          Lasers can only be used by the appropriate vehicles (rockets, etc).
+        Please see "bugs.txt" (the lasers are not finished yet).
+
+
+The Configuration File
+          This should always be kept in the same directory as the executable.
+        Although it can be edited, you should take caution. If the
+        configuration file is damaged or lost you will need to write a new
+        one. If you are unsure of how to do this, contact the author.
+          Please note also, that nothing in the configuration file is
+        case-sensitive, and no zeros are necessary in decimal-point numbers.
+        Any case-formatting is purely intended to make the file easier to
+        read and edit.
+
+
+SECTION 3
+---------
+
+Notes
+
+  I have included the source code in case you wish to understand how the
+game works. Parts of it are cluttered, parts of it make less sense than
+perhaps they should. Much of it could be optimised. But at least it seems
+to work :)
+  Suggestions on how to improve the code are welcome.
+
+  - Greg gregm@pcug.org.au [1]
+
+
+SECTION 4
+---------
+
+Credits
+
+  Although I, Gregory McIntyre, am the main programmer and this game has
+essentially been all my work, these people have often joined in to help
+where they could, or otherwise deserve credit.
+
+Playtesting
+        Lewis Conn
+        Charles Gretton
+        Russel deVres
+        Wil Henderson
+        MEEEEE damnit!!
+
+Coralie Walker  for allowing me to make the dang thing!
+Wil Henderson   for helping to make violence a reality for the game and
+                helping with other occasional advice
+
+FOOTNOTES
+---------
+
+[1] Email no longer valid.
+
+-----------
+End of file
