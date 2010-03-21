@@ -1,10 +1,12 @@
-= Dogfight, 1997
+Dogfight, 1997
+--------------
 
 This was my year 11 computing project at high school. It is a single-screen,
 side viewed, bi-plane dogfighting game for 1-4 players (crowding around a
 keyboard). It is written in C and uses the Allegro game library.
 
-== Disclaimer
+Disclaimer
+----------
 
 I wrote this program when I was learning the ropes of C. It is ugly and
 amatuerish C code, but I don't want to fix it up too much because it has
