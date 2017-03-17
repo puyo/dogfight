@@ -1,3 +1,4 @@
 dogfight
 *.o
 tags
+.DS_Store
