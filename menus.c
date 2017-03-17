@@ -3,7 +3,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
-#include "allegro.h"
+#include "allegro5/allegro.h"
 #include "dogdata.h"
 
 #define NUM_OF_VEHICLES       3
@@ -241,7 +241,7 @@ struct menuinfo move_menu_cursor(struct menuinfo menu)
 
 
 
-void draw_menu(BITMAP *scrbuffer, DATAFILE *main_data, struct menuinfo menu,
+void draw_menu(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, struct menuinfo menu,
                int row, int col)
 {
  // function paints a given menu onto the given bitmap
@@ -273,7 +273,7 @@ void draw_menu(BITMAP *scrbuffer, DATAFILE *main_data, struct menuinfo menu,
 
 
 
-struct optionsinfo goto_stats_menu(BITMAP *scrbuffer, DATAFILE *main_data,
+struct optionsinfo goto_stats_menu(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data,
                                    DATAFILE *plane_data, struct optionsinfo options,
                                    struct menuinfo stats_menu)
 {
@@ -407,7 +407,7 @@ struct optionsinfo goto_stats_menu(BITMAP *scrbuffer, DATAFILE *main_data,
 
 
 
-struct optionsinfo goto_options_menu(BITMAP *scrbuffer, DATAFILE *main_data,
+struct optionsinfo goto_options_menu(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data,
                                      DATAFILE *plane_data, struct optionsinfo options,
                                      struct menuinfo options_menu,
                                      struct menuinfo stats_menu)
@@ -440,7 +440,7 @@ struct optionsinfo goto_options_menu(BITMAP *scrbuffer, DATAFILE *main_data,
 
 
 
-void base_title_page(BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,
+void base_title_page(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,
                      struct menuinfo title_menu)
 {
  // function draws the base options list (ie - the title page)
@@ -454,7 +454,7 @@ void base_title_page(BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_dat
 
 
 
-void title_page(BITMAP *scrbuffer, DATAFILE *main_data)
+void title_page(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data)
 {
  // function sets up the title screen and allows access to the actual game
 

@@ -2,18 +2,15 @@
 /* Program:      a dog fighting game          */
 /* Author:       Gregory McIntyre             */
 /* First edited: 28/08/97                     */
-/* Last edited:  11/23/97                     */
 
 #include <stdio.h>
-#include <allegro.h>
-#include "dogdata.h"
+#include <allegro5/allegro.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 
 // game constants
 #define SET_W               640                // } resolution
 #define SET_H               480                // }
-
-#define CALLBACKS          (256*1)             // if 2 tables need to be set up then this
-                                               // will be 256 * 2
 
 // level constants
 #define CLOUD_TRANSPARENCY  180                // 0 <= CLOUD_TRANSPARENCY <= 255
@@ -30,103 +27,120 @@
 #define GREEN                96
 #define ORANGE              112
 
-
-
-// ***** TYPE DEFINITIONS ***************************************************************
-
-// translucency tables
-COLOR_MAP trans_table;
-
-// global count for call back functions' progress meters
-int callback_count;
-// global palette
-PALETTE pal;
-
-
-// ***** MAIN PROGRAM CODE **************************************************************
-
-// progress indicator for the color table calculations
-void callback_func()
-{
- // function is called 256 times during the translucency table setup
-
- callback_count++;
-
- // draw the progress bar's frame
- rect(screen, SCREEN_W/4, SCREEN_H/2-11, SCREEN_W*3/4, SCREEN_H/2+11, GREY+15);
-
- // add to the progress bar
- rectfill(screen, (callback_count+1)*((SCREEN_W/2)-1)/(CALLBACKS+1)+SCREEN_W/4, SCREEN_H/2-10, ((callback_count+1)*((SCREEN_W/2)-1)/(CALLBACKS+1))+(((SCREEN_W/2)-1)/CALLBACKS)+SCREEN_W/4, SCREEN_H/2+10, (callback_count+1)*(GREY+15)/(CALLBACKS+1));
-}
-
-
-
 // ***** MAIN ***************************************************************************
 
-int main(void)
-{
- BITMAP *scrbuffer;
- DATAFILE *main_data;
- int vmode_error;
+const float FPS = 60;
 
- RGB black = { 0,  0,  0 };
+int main(int argc, char **argv){
 
- // initialise allegro
- allegro_init();
- install_keyboard();
- install_timer();
- //install_sound(DIGI_AUTODETECT, MIDI_AUTODETECT, NULL);
+   ALLEGRO_DISPLAY *display = NULL;
+   ALLEGRO_EVENT_QUEUE *event_queue = NULL;
+   ALLEGRO_TIMER *timer = NULL;
+   bool redraw = true;
+   float w, h;
 
- // load main data file into memory
- main_data = load_datafile("dogfight.dat");
+   if (!al_init()) {
+      fprintf(stderr, "failed to initialize allegro!\n");
+      return -1;
+   }
 
- // use the palette stored in the datafile and
- // set the "clear" colour from a working hot pink to an invisible black
- memcpy(&pal, main_data[MAINPAL].dat, sizeof(pal));
+   al_init_font_addon(); // initialize the font addon
+   al_init_ttf_addon();// initialize the ttf (True Type Font) addon
 
- // enter graphics mode -- don't debug from here --
- vmode_error = set_gfx_mode(GFX_AUTODETECT, SET_W, SET_H, 0, 0);
- if (vmode_error) {
-   printf("Error setting graphics mode...\n%s\n\n", allegro_error);
-   allegro_exit();
-   exit(1);
- }
+   ALLEGRO_FONT *font = al_load_ttf_font("data/font.ttf", 12, 0);
+   if (!font) {
+     fprintf(stderr, "Could not load font.\n");
+     return -1;
+   }
 
- set_palette(pal);
- set_color(0, &black);
+   timer = al_create_timer(1.0 / FPS);
+   if (!timer) {
+      fprintf(stderr, "failed to create timer!\n");
+      return -1;
+   }
 
- // build a colour lookup table for translucent drawing
- // NB: 128 translucency = 50%
- textout_centre_ex(screen, main_data[FONTSMALL].dat, "Dogfight by Gregory McIntyre", SCREEN_W/2, SCREEN_H/2-58, GREY+15, -1);
- textout_centre_ex(screen, font, "Loading. Please wait...", SCREEN_W/2, SCREEN_H/2-20, GREY+15, -1);
- callback_count = 0;
- create_trans_table(&trans_table, main_data[MAINPAL].dat, CLOUD_TRANSPARENCY, CLOUD_TRANSPARENCY, CLOUD_TRANSPARENCY, callback_func);
+   display = al_create_display(640, 480);
+   if (!display) {
+      fprintf(stderr, "failed to create display!\n");
+      al_destroy_timer(timer);
+      return -1;
+   }
 
- // allocate memory for screen buffer
- scrbuffer = create_bitmap(SCREEN_W, SCREEN_H); clear(scrbuffer);
+   w = al_get_display_width(display);
+   h = al_get_display_height(display);
 
- // when everything is ready fade out and go to the title screen
- fade_out(10);
- title_page(scrbuffer, main_data);
+   event_queue = al_create_event_queue();
+   if (!event_queue) {
+      fprintf(stderr, "failed to create event_queue!\n");
+      al_destroy_display(display);
+      al_destroy_timer(timer);
+      return -1;
+   }
 
- // free allocated memory and exit allegro
- destroy_bitmap(scrbuffer);
+   al_register_event_source(event_queue, al_get_display_event_source(display));
+   al_register_event_source(event_queue, al_get_timer_event_source(timer));
 
- unload_datafile(main_data);
- allegro_exit();
+   al_clear_to_color(al_map_rgb(0,0,0));
+   al_flip_display();
 
- // print a message that will be displayed at the DOS prompt on leaving
- printf("Thankyou for playing Dogfight.\n");
- printf("Dogfight was created using the Allegro game library.\n");
- printf("It's free so enjoy and distribute at your leasure.\n\n");
+   al_start_timer(timer);
 
- printf("-------------------------------\n");
- printf("The author can be contacted at:\n\n");
- printf("gregm@pcug.org.au*\n\n");
- printf("-------------------------------\n\n");
- printf("Have a nice day!\n");
- printf("\n");
- printf("* Email no longer valid.\n");
- return 0;
+   while (1) {
+      ALLEGRO_EVENT ev;
+      al_wait_for_event(event_queue, &ev);
+
+      if(ev.type == ALLEGRO_EVENT_TIMER) {
+         redraw = true;
+      }
+      else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+         break;
+      }
+
+      if (redraw && al_is_event_queue_empty(event_queue)) {
+         redraw = false;
+         al_clear_to_color(al_map_rgb(0,0,0));
+
+         al_draw_text(font, al_map_rgb(255, 255, 255), w/2, h/2-58, ALLEGRO_ALIGN_CENTRE, "Dogfight by Gregory McIntyre");
+
+         al_flip_display();
+      }
+   }
+
+   al_destroy_timer(timer);
+   al_destroy_display(display);
+   al_destroy_event_queue(event_queue);
+
+   // print a message that will be displayed at the DOS prompt on leaving
+   printf("Thankyou for playing Dogfight.\n");
+   printf("Dogfight was created using the Allegro game library.\n");
+   printf("It's free so enjoy and distribute at your leasure.\n\n");
+
+   printf("-------------------------------\n");
+   printf("The author can be contacted at:\n\n");
+   printf("gregm@pcug.org.au*\n\n");
+   printf("-------------------------------\n\n");
+   printf("Have a nice day!\n");
+   printf("\n");
+   printf("* Email no longer valid.\n");
+   return 0;
 }
-END_OF_MAIN();
+
+/* int main_x(void) */
+/* { */
+/*  //set_palette(pal); */
+/*  //set_color(0, &black); */
+
+/*  // build a colour lookup table for translucent drawing */
+/*  // NB: 128 translucency = 50% */
+/*  //textout_centre_ex(screen, main_data[FONTSMALL].dat, "Dogfight by Gregory McIntyre", SCREEN_W/2, SCREEN_H/2-58, GREY+15, -1); */
+/*  //textout_centre_ex(screen, font, "Loading. Please wait...", SCREEN_W/2, SCREEN_H/2-20, GREY+15, -1); */
+/*  callback_count = 0; */
+/*  //create_trans_table(&trans_table, main_data[MAINPAL].dat, CLOUD_TRANSPARENCY, CLOUD_TRANSPARENCY, CLOUD_TRANSPARENCY, callback_func); */
+
+/*  // allocate memory for screen buffer */
+/*  // scrbuffer = create_bitmap(SCREEN_W, SCREEN_H); clear(scrbuffer); */
+
+/*  // when everything is ready fade out and go to the title screen */
+/*  //fade_out(10); */
+/*  //title_page(scrbuffer, main_data); */
+/* } */

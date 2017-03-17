@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <allegro.h>
+#include "allegro5/allegro.h"
 #include "dogdata.h"
 
 
@@ -174,7 +174,7 @@ void randomize_array(int *array, int end, float rand_min, float rand_max)
 
 
 
-void draw_clouds(BITMAP *scrbuffer, DATAFILE *object_data, struct optionsinfo options)
+void draw_clouds(ALLEGRO_BITMAP *scrbuffer, DATAFILE *object_data, struct optionsinfo options)
 {
  // function draws clouds onto the given bitmap
  // (or other objects that can be passed through)
@@ -188,7 +188,7 @@ void draw_clouds(BITMAP *scrbuffer, DATAFILE *object_data, struct optionsinfo op
 
 
 
-void draw_stats(BITMAP *scrbuffer, struct playerinfo *player, struct optionsinfo options)
+void draw_stats(ALLEGRO_BITMAP *scrbuffer, struct playerinfo *player, struct optionsinfo options)
 {
  // function draws "speed meters" on the given bitmap (screen buffer)
  // (and any other information needed)
@@ -282,7 +282,7 @@ void draw_stats(BITMAP *scrbuffer, struct playerinfo *player, struct optionsinfo
 
 
 
-void paint(BITMAP *sprite, int colour_new)
+void paint(ALLEGRO_BITMAP *sprite, int colour_new)
 {
  // function checks each pixel of a bitmap and on finding red pixels, changes them
  // to the given colour equivalent
@@ -303,7 +303,7 @@ void paint(BITMAP *sprite, int colour_new)
 
 
 
-void draw_parachute(BITMAP *scrbuffer, DATAFILE *main_data, struct playerinfo *player,
+void draw_parachute(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, struct playerinfo *player,
                     struct optionsinfo options, char count)
 {
  // function draws parachutes and splats
@@ -313,7 +313,7 @@ void draw_parachute(BITMAP *scrbuffer, DATAFILE *main_data, struct playerinfo *p
 
  if (!player[count].parachute.splatting) {
    // parachutes
-   BITMAP *parabuffer;
+   ALLEGRO_BITMAP *parabuffer;
 
    parabuffer = create_bitmap(PARACHUTE_SIZE_W, PARACHUTE_SIZE_H);
    clear(parabuffer);
@@ -352,7 +352,7 @@ void draw_parachute(BITMAP *scrbuffer, DATAFILE *main_data, struct playerinfo *p
 
 
 
-void draw_shots(BITMAP *scrbuffer, struct playerinfo *player, struct optionsinfo options,
+void draw_shots(ALLEGRO_BITMAP *scrbuffer, struct playerinfo *player, struct optionsinfo options,
                 char count)
 {
  char shot_count;
@@ -386,13 +386,13 @@ void draw_shots(BITMAP *scrbuffer, struct playerinfo *player, struct optionsinfo
 
 
 
-void draw_screen(BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,
+void draw_screen(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,
                  DATAFILE *explosion_data, DATAFILE *object_data,
                  struct playerinfo *player, struct optionsinfo options)
 {
  // function draws the game screen
 
- BITMAP *spritebuffer;
+ ALLEGRO_BITMAP *spritebuffer;
  double angle256;
  char explosion;
  int count;
@@ -521,7 +521,7 @@ void explode_player(struct playerinfo *player, char player_count)
 // required to do the collision detection to the function
 // why not? allegro does not support more than those arguments it sees as
 // necessary
-//void line_check(BITMAP *scrbuffer, int x, int y, int n)//, struct playerinfo *player,
+//void line_check(ALLEGRO_BITMAP *scrbuffer, int x, int y, int n)//, struct playerinfo *player,
 //                char plane_count, char check_count)
 //{
  // function is a callback function used to check each pixel point on the 'laser lines'
@@ -537,7 +537,7 @@ void explode_player(struct playerinfo *player, char player_count)
 
 
 
-void detect_collisions(BITMAP *scrbuffer, struct playerinfo *player,
+void detect_collisions(ALLEGRO_BITMAP *scrbuffer, struct playerinfo *player,
                        struct optionsinfo options)
 {
  // function checks to see if any planes or shots overlap to a certain extent
@@ -1070,7 +1070,7 @@ struct optionsinfo change_options(struct optionsinfo options)
 
 
 
-void game(BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,
+void game(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,
           DATAFILE *explosion_data, DATAFILE *object_data, struct optionsinfo options,
           char players)
 {
