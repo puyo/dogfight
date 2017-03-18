@@ -33,96 +33,95 @@ const float FPS = 60;
 
 int main(int argc, char **argv){
 
-   ALLEGRO_DISPLAY *display = NULL;
-   ALLEGRO_EVENT_QUEUE *event_queue = NULL;
-   ALLEGRO_TIMER *timer = NULL;
-   bool redraw = true;
-   float w, h;
+  ALLEGRO_DISPLAY *display = NULL;
+  ALLEGRO_EVENT_QUEUE *event_queue = NULL;
+  ALLEGRO_TIMER *timer = NULL;
+  bool redraw = true;
+  float w, h;
 
-   if (!al_init()) {
-      fprintf(stderr, "failed to initialize allegro!\n");
-      return -1;
-   }
+  if (!al_init()) {
+    fprintf(stderr, "failed to initialize allegro!\n");
+    return -1;
+  }
 
-   al_init_font_addon(); // initialize the font addon
-   al_init_ttf_addon();// initialize the ttf (True Type Font) addon
+  al_init_font_addon(); // initialize the font addon
+  al_init_ttf_addon();// initialize the ttf (True Type Font) addon
 
-   ALLEGRO_FONT *font = al_load_ttf_font("data/font.ttf", 12, 0);
-   if (!font) {
-     fprintf(stderr, "Could not load font.\n");
-     return -1;
-   }
+  ALLEGRO_FONT *font = al_load_ttf_font("data/font.ttf", 12, 0);
+  if (!font) {
+    fprintf(stderr, "Could not load font.\n");
+    return -1;
+  }
 
-   timer = al_create_timer(1.0 / FPS);
-   if (!timer) {
-      fprintf(stderr, "failed to create timer!\n");
-      return -1;
-   }
+  timer = al_create_timer(1.0 / FPS);
+  if (!timer) {
+    fprintf(stderr, "failed to create timer!\n");
+    return -1;
+  }
 
-   display = al_create_display(640, 480);
-   if (!display) {
-      fprintf(stderr, "failed to create display!\n");
-      al_destroy_timer(timer);
-      return -1;
-   }
+  display = al_create_display(640, 480);
+  if (!display) {
+    fprintf(stderr, "failed to create display!\n");
+    al_destroy_timer(timer);
+    return -1;
+  }
 
-   w = al_get_display_width(display);
-   h = al_get_display_height(display);
+  w = al_get_display_width(display);
+  h = al_get_display_height(display);
 
-   event_queue = al_create_event_queue();
-   if (!event_queue) {
-      fprintf(stderr, "failed to create event_queue!\n");
-      al_destroy_display(display);
-      al_destroy_timer(timer);
-      return -1;
-   }
+  event_queue = al_create_event_queue();
+  if (!event_queue) {
+    fprintf(stderr, "failed to create event_queue!\n");
+    al_destroy_display(display);
+    al_destroy_timer(timer);
+    return -1;
+  }
 
-   al_register_event_source(event_queue, al_get_display_event_source(display));
-   al_register_event_source(event_queue, al_get_timer_event_source(timer));
+  al_register_event_source(event_queue, al_get_display_event_source(display));
+  al_register_event_source(event_queue, al_get_timer_event_source(timer));
 
-   al_clear_to_color(al_map_rgb(0,0,0));
-   al_flip_display();
+  al_clear_to_color(al_map_rgb(0,0,0));
+  al_flip_display();
 
-   al_start_timer(timer);
+  al_start_timer(timer);
 
-   while (1) {
-      ALLEGRO_EVENT ev;
-      al_wait_for_event(event_queue, &ev);
+  while (1) {
+    ALLEGRO_EVENT ev;
+    al_wait_for_event(event_queue, &ev);
 
-      if(ev.type == ALLEGRO_EVENT_TIMER) {
-         redraw = true;
-      }
-      else if(ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
-         break;
-      }
+    if (ev.type == ALLEGRO_EVENT_TIMER) {
+      redraw = true;
+    } else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+      break;
+    }
 
-      if (redraw && al_is_event_queue_empty(event_queue)) {
-         redraw = false;
-         al_clear_to_color(al_map_rgb(0,0,0));
+    if (redraw && al_is_event_queue_empty(event_queue)) {
+      redraw = false;
+      al_clear_to_color(al_map_rgb(0, 0, 0));
 
-         al_draw_text(font, al_map_rgb(255, 255, 255), w/2, h/2-58, ALLEGRO_ALIGN_CENTRE, "Dogfight by Gregory McIntyre");
+      al_draw_text(font, al_map_rgb(255, 255, 255), w/2, h/2-58, ALLEGRO_ALIGN_CENTRE, "Dogfight by Gregory McIntyre");
 
-         al_flip_display();
-      }
-   }
+      al_flip_display();
+    }
+  }
 
-   al_destroy_timer(timer);
-   al_destroy_display(display);
-   al_destroy_event_queue(event_queue);
+  al_destroy_timer(timer);
+  al_destroy_display(display);
+  al_destroy_event_queue(event_queue);
 
-   // print a message that will be displayed at the DOS prompt on leaving
-   printf("Thankyou for playing Dogfight.\n");
-   printf("Dogfight was created using the Allegro game library.\n");
-   printf("It's free so enjoy and distribute at your leasure.\n\n");
+  // print a message that will be displayed at the DOS prompt on leaving
+  printf("Thankyou for playing Dogfight.\n");
+  printf("Dogfight was created using the Allegro game library.\n");
+  printf("It's free so enjoy and distribute at your leasure.\n\n");
 
-   printf("-------------------------------\n");
-   printf("The author can be contacted at:\n\n");
-   printf("gregm@pcug.org.au*\n\n");
-   printf("-------------------------------\n\n");
-   printf("Have a nice day!\n");
-   printf("\n");
-   printf("* Email no longer valid.\n");
-   return 0;
+  printf("-------------------------------\n");
+  printf("The author can be contacted at:\n\n");
+  printf("gregm@pcug.org.au*\n\n");
+  printf("-------------------------------\n\n");
+  printf("Have a nice day!\n");
+  printf("\n");
+  printf("* Email no longer valid.\n");
+  return 0;
 }
 
 /* int main_x(void) */
