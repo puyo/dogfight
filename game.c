@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "allegro5/allegro.h"
+#include <allegro5/allegro.h>
 #include "dogdata.h"
 
 
@@ -65,17 +65,17 @@
 
 // ***** TYPE DEFINITIONS ***************************************************************
 
-enum type_player_status
-  { NORMAL,
-    GONE
-  };
+enum type_player_status {
+  NORMAL,
+  GONE
+};
 
-enum type_parachute_status
-  { IN_COCKPIT,
-    HAPPY,
-    WORRIED,
-    SPLATTED
-  };
+enum type_parachute_status {
+  IN_COCKPIT,
+  HAPPY,
+  WORRIED,
+  SPLATTED
+};
 
 typedef struct optionsinfo {
   char vehicle;
@@ -142,10 +142,10 @@ typedef struct playerinfo {
 } playerinfo;
 
 // translucency tables
-COLOR_MAP trans_table;
+//COLOR_MAP trans_table;
 
 // global palette
-PALETTE pal;
+//PALETTE pal;
 
 // ***** MAIN PROGRAM CODE **************************************************************
 
@@ -1067,7 +1067,6 @@ struct optionsinfo change_options(struct optionsinfo options)
 
   return(options);
 }
-
 
 
 void game(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,

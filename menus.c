@@ -3,7 +3,7 @@
 #include <math.h>
 #include <string.h>
 #include <stdio.h>
-#include "allegro5/allegro.h"
+#include <allegro5/allegro.h>
 #include "dogdata.h"
 
 #define NUM_OF_VEHICLES       3

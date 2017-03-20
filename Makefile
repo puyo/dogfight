@@ -1,8 +1,9 @@
 CC=gcc
 LD=gcc
 CFLAGS = `pkg-config allegro-5 --cflags`
-LDLIBS = `pkg-config allegro-5 --libs` -lallegro_main -lallegro_font -lallegro_ttf
+LDLIBS = `pkg-config allegro-5 --libs` -lallegro_main -lallegro_font -lallegro_ttf -lallegro_image -lallegro_dialog -lallegro_primitives
 #OBJS=game.o main.o menus.o
+#OBJS=main.o game.o
 OBJS=main.o
 PROG=dogfight
 

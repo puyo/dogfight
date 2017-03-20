@@ -7,6 +7,9 @@
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_font.h>
 #include <allegro5/allegro_ttf.h>
+#include <allegro5/allegro_image.h>
+#include <allegro5/allegro_native_dialog.h>
+#include <allegro5/allegro_primitives.h>
 
 // game constants
 #define SET_W               640                // } resolution
@@ -27,6 +30,30 @@
 #define GREEN                96
 #define ORANGE              112
 
+typedef struct assetsinfo {
+  ALLEGRO_FONT *font;
+  ALLEGRO_BITMAP *bg;
+  ALLEGRO_BITMAP *explosion[8];
+  ALLEGRO_BITMAP *plane[3];
+  ALLEGRO_BITMAP *cloud;
+  ALLEGRO_BITMAP *parachute;
+  ALLEGRO_BITMAP *parafall;
+  ALLEGRO_BITMAP *title;
+  ALLEGRO_BITMAP *shot;
+} assetsinfo;
+
+int load_bitmap(ALLEGRO_BITMAP **bmp, const char *path) {
+  ALLEGRO_DISPLAY *display = al_get_current_display();
+  char error[512];
+  *bmp = al_load_bitmap(path);
+  if (!*bmp) {
+    snprintf(error, sizeof(error), "Failed to load image: %s", path);
+    al_show_native_message_box(display, "Error", "Error", error, NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    return -1;
+  }
+  return 0;
+}
+
 // ***** MAIN ***************************************************************************
 
 const float FPS = 60;
@@ -38,24 +65,32 @@ int main(int argc, char **argv){
   ALLEGRO_TIMER *timer = NULL;
   bool redraw = true;
   float w, h;
+  assetsinfo assets;
 
   if (!al_init()) {
-    fprintf(stderr, "failed to initialize allegro!\n");
+    al_show_native_message_box(display, "Error", "Error", "Failed to initialize allegro.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    return -1;
+  }
+  if (!al_init_image_addon()) {
+    al_show_native_message_box(display, "Error", "Error", "Failed to initialize image system.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    return -1;
+  }
+  if (!al_init_font_addon()) {
+    al_show_native_message_box(display, "Error", "Error", "Failed to initialize font system.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    return -1;
+  }
+  if (!al_init_ttf_addon()) {
+    al_show_native_message_box(display, "Error", "Error", "Failed to initialize Truetype font system.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
+    return -1;
+  }
+  if (!al_init_primitives_addon()) {
+    al_show_native_message_box(display, "Error", "Error", "Failed to initialize primitives drawing system.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
     return -1;
   }
 
-  al_init_font_addon(); // initialize the font addon
-  al_init_ttf_addon();// initialize the ttf (True Type Font) addon
-
-  ALLEGRO_FONT *font = al_load_ttf_font("data/font.ttf", 12, 0);
-  if (!font) {
+  assets.font = al_load_ttf_font("data/font.ttf", 12, 0);
+  if (!assets.font) {
     fprintf(stderr, "Could not load font.\n");
-    return -1;
-  }
-
-  timer = al_create_timer(1.0 / FPS);
-  if (!timer) {
-    fprintf(stderr, "failed to create timer!\n");
     return -1;
   }
 
@@ -65,6 +100,29 @@ int main(int argc, char **argv){
     al_destroy_timer(timer);
     return -1;
   }
+
+  timer = al_create_timer(1.0 / FPS);
+  if (!timer) {
+    fprintf(stderr, "failed to create timer!\n");
+    return -1;
+  }
+
+  int r;
+  if ((r = load_bitmap(&assets.title, "data/title.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.bg, "data/back01.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.cloud, "data/cloud01.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.parachute, "data/parachte.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.parafall, "data/parafall.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.shot, "data/shot01.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.explosion[0], "data/explsn01.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.explosion[1], "data/explsn02.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.explosion[2], "data/explsn03.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.explosion[3], "data/explsn04.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.explosion[4], "data/explsn05.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.explosion[5], "data/explsn06.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.explosion[6], "data/explsn07.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.explosion[7], "data/explsn08.png")) != 0) { return r; }
+  if ((r = load_bitmap(&assets.explosion[8], "data/explsn09.png")) != 0) { return r; }
 
   w = al_get_display_width(display);
   h = al_get_display_height(display);
@@ -99,7 +157,8 @@ int main(int argc, char **argv){
       redraw = false;
       al_clear_to_color(al_map_rgb(0, 0, 0));
 
-      al_draw_text(font, al_map_rgb(255, 255, 255), w/2, h/2-58, ALLEGRO_ALIGN_CENTRE, "Dogfight by Gregory McIntyre");
+      al_draw_bitmap(assets.title, 0, 0, 0);
+      al_draw_text(assets.font, al_map_rgb(255, 255, 255), w/2, h/2-58, ALLEGRO_ALIGN_CENTRE, "Dogfight by Gregory McIntyre");
 
       al_flip_display();
     }
@@ -123,23 +182,3 @@ int main(int argc, char **argv){
   printf("* Email no longer valid.\n");
   return 0;
 }
-
-/* int main_x(void) */
-/* { */
-/*  //set_palette(pal); */
-/*  //set_color(0, &black); */
-
-/*  // build a colour lookup table for translucent drawing */
-/*  // NB: 128 translucency = 50% */
-/*  //textout_centre_ex(screen, main_data[FONTSMALL].dat, "Dogfight by Gregory McIntyre", SCREEN_W/2, SCREEN_H/2-58, GREY+15, -1); */
-/*  //textout_centre_ex(screen, font, "Loading. Please wait...", SCREEN_W/2, SCREEN_H/2-20, GREY+15, -1); */
-/*  callback_count = 0; */
-/*  //create_trans_table(&trans_table, main_data[MAINPAL].dat, CLOUD_TRANSPARENCY, CLOUD_TRANSPARENCY, CLOUD_TRANSPARENCY, callback_func); */
-
-/*  // allocate memory for screen buffer */
-/*  // scrbuffer = create_bitmap(SCREEN_W, SCREEN_H); clear(scrbuffer); */
-
-/*  // when everything is ready fade out and go to the title screen */
-/*  //fade_out(10); */
-/*  //title_page(scrbuffer, main_data); */
-/* } */
