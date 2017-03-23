@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <allegro5/allegro.h>
-#include "dogdata.h"
+#include "dogfight.h"
 
 
 #define PLANE_SIZE_W          32                  // }
@@ -140,12 +140,6 @@ typedef struct playerinfo {
   struct parachuteinfo parachute;
 
 } playerinfo;
-
-// translucency tables
-//COLOR_MAP trans_table;
-
-// global palette
-//PALETTE pal;
 
 // ***** MAIN PROGRAM CODE **************************************************************
 
@@ -1069,12 +1063,8 @@ struct optionsinfo change_options(struct optionsinfo options)
 }
 
 
-void game(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,
-          DATAFILE *explosion_data, DATAFILE *object_data, struct optionsinfo options,
-          char players)
+void game(doginfo *dog, struct optionsinfo options, char players)
 {
-  // function starts a game with the specified parameters
-
   // set room for four players because defaults are set for
   // them regardless of how many players participate
   struct playerinfo player[4];
@@ -1088,13 +1078,9 @@ void game(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,
   initiate_variables(&player[0], options);
 
   // make players their proper colours for the countdown
-  for (count = 0; count < options.players; count++)
+  for (count = 0; count < options.players; count++) {
     player[count].invincible = 0;
-
-  // draw the screen before fading in
-  draw_screen(scrbuffer, main_data, plane_data, explosion_data, object_data, &player[0],
-              options);
-  fade_in(pal, 10);
+  }
 
   // do a countdown to build suspense!
   for (countdown = 3; countdown >= 1; countdown--) {
@@ -1102,37 +1088,41 @@ void game(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,
     textout_centre_ex(screen, main_data[FONTLARGE].dat, countdown_string,
                       SCREEN_W/2, SCREEN_H/2, GREY+15, -1);
     rest(1000);
-    draw_screen(scrbuffer, main_data, plane_data, explosion_data, object_data, &player[0],
-                options);
+    draw_screen(scrbuffer, main_data, plane_data, explosion_data, object_data, &player[0], options);
   }
-  textout_centre_ex(screen, main_data[FONTLARGE].dat, "GO", SCREEN_W/2,
-                    SCREEN_H/2, GREEN+15, -1);
+  textout_centre_ex(screen, main_data[FONTLARGE].dat, "GO", SCREEN_W/2, SCREEN_H/2, GREEN+15, -1);
   rest(200);
 
   // reset players to invincible once the countdown has ended
-  for (count = 0; count < options.players; count++)
+  for (count = 0; count < options.players; count++) {
     player[count].invincible = options.invincibility_life;
+  }
 
-  // main game loop
-  clock_t last_time = clock();
-  do {
-    end = move_planes(&player[0], options);
+  char end = 0;
 
-    // variables not passed back from move_planes such as coralie mode must
-    // be changed outside of the function
-    options = change_options(options);
+  while (!end) {
+    ALLEGRO_EVENT ev;
+    al_wait_for_event(dog->event_queue, &ev);
 
-    detect_collisions(scrbuffer, &player[0], options);
-    vsync();
-    draw_screen(scrbuffer, main_data, plane_data, explosion_data, object_data, &player[0],
-                options);
+    if (ev.type == ALLEGRO_EVENT_TIMER) {
+      redraw = true;
+    } else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+      break;
+    }
 
-    // frame limiting
-    clock_t this_time = clock();
-    clock_t diff = this_time - last_time;
-    last_time = this_time;
-    clock_t wait = MAX(0, 33 - (diff * 1000/CLOCKS_PER_SEC)); // 17ms ~ 58 fps
-    rest(wait);
-  } while (!end);
-  fade_out(10);
+    if (redraw && al_is_event_queue_empty(event_queue)) {
+      redraw = false;
+
+      end = move_planes(&player[0], options);
+
+      // variables not passed back from move_planes such as coralie mode must
+      // be changed outside of the function
+      options = change_options(options);
+
+      //detect_collisions(scrbuffer, &player[0], options);
+      //draw_screen(display, assets, &player[0], options);
+
+      al_flip_display();
+    }
+  }
 }

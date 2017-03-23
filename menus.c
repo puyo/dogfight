@@ -2,9 +2,19 @@
 
 #include <math.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdio.h>
-#include <allegro5/allegro.h>
-#include "dogdata.h"
+#include "dogfight.h"
+
+char *strlwr(char *str)
+{
+  unsigned char *p = (unsigned char *)str;
+  while (*p) {
+    *p = tolower((unsigned char)*p);
+    p++;
+  }
+  return str;
+}
 
 #define NUM_OF_VEHICLES       3
 
@@ -42,36 +52,6 @@ typedef struct menuinfo {
   double optionval[20];
   char optionval_str[20][8];
 } menuinfo;
-
-typedef struct optionsinfo {
-  char vehicle;
-  char backdrop;
-  char players;
-
-  float turn_speed;
-  float acceleration;
-  char min_speed;
-  char max_speed;
-  char num_of_shots;
-  char shot_lag;
-  char shot_life;
-  char shot_base_speed;
-  char laser_length;
-
-  float gravity;
-  char invincibility_life;
-  float explosion_speed;
-  char cloud_type;
-
-  char coralie;
-} optionsinfo;
-
-
-// translucency tables
-COLOR_MAP trans_table;
-
-// global palette
-PALETTE pal;
 
 
 // ***** MAIN PROGRAM CODE **************************************************************
@@ -123,10 +103,10 @@ double read_value(FILE *fp, char headchar_spef, char *heading, char *string)
   do {
     // read the next line from the file
     fgets(check_str, 256, fp);
-    strcpy(check_str, (char *)strlwr(check_str));
+    strcpy(check_str, strlwr(check_str));
     headchar = check_str[0];
   } while (strstr(check_str, heading) == NULL
-           && !feof(fp) || headchar != headchar_spef
+           && (!feof(fp) || headchar != headchar_spef)
            && !feof(fp));
 
   if (strstr(check_str, heading) != NULL) {
@@ -167,16 +147,7 @@ double read_value(FILE *fp, char headchar_spef, char *heading, char *string)
 
 
 
-void save_user_plane(struct menuinfo menu)
-{
-  // function saves the given information under the 'user vehicle' heading
-  // in the config file
-
-}
-
-
-
-struct menuinfo reset_type(FILE *cfgfile, struct menuinfo stats_menu, int vehicle)
+void reset_type(FILE *cfgfile, menuinfo *stats_menu, int vehicle)
 {
   // function loads the options for that type of plane
 
@@ -191,91 +162,72 @@ struct menuinfo reset_type(FILE *cfgfile, struct menuinfo stats_menu, int vehicl
   fixed_str(vehicle_number_str, vehicle, 2);
   strcat(vehicle_str, vehicle_number_str);
 
-  stats_menu.optionval[0] = read_value(cfgfile, '@', vehicle_str, "vehicle");
-  stats_menu.optionval[1] = read_value(cfgfile, '@', vehicle_str, "turn_speed");
-  stats_menu.optionval[2] = read_value(cfgfile, '@', vehicle_str, "acceleration");
-  stats_menu.optionval[3] = read_value(cfgfile, '@', vehicle_str, "min_speed");
-  stats_menu.optionval[4] = read_value(cfgfile, '@', vehicle_str, "max_speed");
-  stats_menu.optionval[5] = read_value(cfgfile, '@', vehicle_str, "num_of_shots");
-  stats_menu.optionval[6] = read_value(cfgfile, '@', vehicle_str, "shot_life");
-  stats_menu.optionval[7] = read_value(cfgfile, '@', vehicle_str, "shot_lag");
-  stats_menu.optionval[8] = read_value(cfgfile, '@', vehicle_str, "shot_base_speed");
-  stats_menu.optionval[9] = read_value(cfgfile, '@', vehicle_str, "laser_length");
-
+  stats_menu->optionval[0] = read_value(cfgfile, '@', vehicle_str, "vehicle");
+  stats_menu->optionval[1] = read_value(cfgfile, '@', vehicle_str, "turn_speed");
+  stats_menu->optionval[2] = read_value(cfgfile, '@', vehicle_str, "acceleration");
+  stats_menu->optionval[3] = read_value(cfgfile, '@', vehicle_str, "min_speed");
+  stats_menu->optionval[4] = read_value(cfgfile, '@', vehicle_str, "max_speed");
+  stats_menu->optionval[5] = read_value(cfgfile, '@', vehicle_str, "num_of_shots");
+  stats_menu->optionval[6] = read_value(cfgfile, '@', vehicle_str, "shot_life");
+  stats_menu->optionval[7] = read_value(cfgfile, '@', vehicle_str, "shot_lag");
+  stats_menu->optionval[8] = read_value(cfgfile, '@', vehicle_str, "shot_base_speed");
+  stats_menu->optionval[9] = read_value(cfgfile, '@', vehicle_str, "laser_length");
   fclose(cfgfile);
-
-  return(stats_menu);
 }
 
 
 
-struct menuinfo move_menu_cursor(struct menuinfo menu)
+void move_menu_cursor(menuinfo *menu, int keycode)
 {
   // function detects keystrokes and moves cursor/selects something
 
-  int c;
-
-  clear_keybuf();
-  c = readkey();
-
-  switch (c>>8) {
-  case KEY_UP    : menu.highlight--; break;
-  case KEY_DOWN  : menu.highlight++; break;
-  case KEY_LEFT  : menu.selection = menu.highlight;
-    menu.selectupdn = -1;
+  switch (keycode) {
+  case ALLEGRO_KEY_UP    : menu->highlight--; break;
+  case ALLEGRO_KEY_DOWN  : menu->highlight++; break;
+  case ALLEGRO_KEY_LEFT  : menu->selection = menu->highlight;
+    menu->selectupdn = -1;
     break;
-  case KEY_RIGHT :
-  case KEY_ENTER : menu.selection = menu.highlight;
-    menu.selectupdn = 1;
+  case ALLEGRO_KEY_RIGHT :
+  case ALLEGRO_KEY_ENTER : menu->selection = menu->highlight;
+    menu->selectupdn = 1;
     break;
-  case KEY_ESC   : exit(0); break;
+  case ALLEGRO_KEY_ESCAPE: exit(0); break;
   }
 
-  if (menu.highlight < 0)
-    menu.highlight = menu.num_of_options - 1;
-  else if (menu.highlight > menu.num_of_options - 1)
-    menu.highlight = 0;
-
-  return(menu);
+  if (menu->highlight < 0)
+    menu->highlight = menu->num_of_options - 1;
+  else if (menu->highlight > menu->num_of_options - 1)
+    menu->highlight = 0;
 }
 
 
 
-void draw_menu(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, struct menuinfo menu,
-               int row, int col)
+void draw_menu(doginfo *dog, menuinfo *menu)
 {
   // function paints a given menu onto the given bitmap
 
   char count;
+  int row = menu->row;
+  int col = menu->col;
 
-  color_map = &trans_table;
+  al_draw_bitmap(dog->title, 0, 0, 0);
 
-  //clear(scrbuffer);
-  blit(main_data[TITLE_PAGE].dat, scrbuffer, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-  //draw_trans_sprite(scrbuffer, main_data[TITLE_PAGE].dat, 0, 0);
-
-  if (menu.fontsize == 2) {
-    for (count = 0; count <= menu.num_of_options-1; count++)
-      textout_ex(scrbuffer, main_data[FONTSMALL].dat, menu.option[count], col,
-                 row+count*32, GREY+15, -1);
-    // draw a highlight/cursor
-    draw_sprite(scrbuffer, main_data[CURSOR].dat, col-32, row+menu.highlight*32+4);
+  if (menu->fontsize == 2) {
+    for (count = 0; count <= menu->num_of_options-1; count++) {
+      al_draw_text(dog->font, dog->white, col, row + count * 32, 0, menu->option[count]);
+    }
+    al_draw_bitmap(dog->cursor, col - 32, row + menu->highlight*32 + 4, 0);
+  } else if (menu->fontsize == 1) {
+    for (count = 0; count <= menu->num_of_options-1; count++) {
+      al_draw_text(dog->font, dog->white, col, row + count * 16, 0, menu->option[count]);
+    }
+    al_draw_bitmap(dog->cursor, col - 32, row + menu->highlight*16, 0);
   }
-  else if (menu.fontsize == 1) {
-    for (count = 0; count <= menu.num_of_options-1; count++)
-      textout_ex(scrbuffer, font, menu.option[count], col, row+count*16,
-                 GREY+15, -1);
-    // draw a highlight/cursor
-    draw_sprite(scrbuffer, main_data[CURSOR].dat, col-32, row+menu.highlight*16);
-  }
-
 }
 
 
 
-struct optionsinfo goto_stats_menu(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data,
-                                   DATAFILE *plane_data, struct optionsinfo options,
-                                   struct menuinfo stats_menu)
+void goto_stats_menu(doginfo *dog, optionsinfo *options, menuinfo *stats_menu)
 {
   // function controls the stats options menu and optionally writes options to a file
 
@@ -284,189 +236,177 @@ struct optionsinfo goto_stats_menu(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_dat
   float increment;
   char option_str[128] = "";
 
-  stats_menu.highlight = 0;
+  stats_menu->highlight = 0;
   // reset the selection
-  stats_menu.selection = -1;
+  stats_menu->selection = -1;
 
   do {
-    // add or minus a set amount depending on which button was pressed
-    increment = 0.05;
-    if (stats_menu.selectupdn == -1)
-      increment *= -1;
-    switch (stats_menu.selection) {
-    case 1 : stats_menu.optionval[1] += increment; break; // turn
-    case 2 : stats_menu.optionval[2] += increment; break; // acceleration
-    };
+    ALLEGRO_EVENT ev;
 
-    // add or minus a set amount depending on which button was pressed
-    increment = 1;
-    if (stats_menu.selectupdn == -1)
-      increment *= -1;
-    switch (stats_menu.selection) {
-    case 0 : stats_menu.optionval[0] += increment; break; // plane
-    case 3 : stats_menu.optionval[3] += increment; break; // min speed
-    case 4 : stats_menu.optionval[4] += increment; break; // max speed
-    case 5 : stats_menu.optionval[5] += increment; break; // num of shots
-    case 6 : stats_menu.optionval[6] += increment; break; // shot life
-    case 7 : stats_menu.optionval[7] += increment; break; // shot lag
-    case 8 : stats_menu.optionval[8] += increment; break; // shot base speed
-    case 9 : stats_menu.optionval[9] += increment; break; // laser len
-    case 10: stats_menu = reset_type(cfgfile, stats_menu, stats_menu.optionval[0]); break;
-    };
+    al_wait_for_event(dog->event_queue, &ev);
 
-    // make sure options are within boundaries (boundaries will be different for
-    // each option)
-    // vehicle
-    if (stats_menu.optionval[0] > NUM_OF_VEHICLES-1)
-      stats_menu.optionval[0] = 0;
-    if (stats_menu.optionval[0] < 0)
-      stats_menu.optionval[0] = NUM_OF_VEHICLES-1;
-    // turn
-    if (stats_menu.optionval[1] > 3.10)
-      stats_menu.optionval[1] = 0;
-    if (stats_menu.optionval[1] < 0)
-      stats_menu.optionval[1] = 3.10;
-    // acceleration
-    if (stats_menu.optionval[2] > stats_menu.optionval[4])
-      stats_menu.optionval[2] = 0.05;
-    if (stats_menu.optionval[2] < 0)
-      stats_menu.optionval[2] = stats_menu.optionval[4];
-    // min speed
-    if (stats_menu.optionval[3] > stats_menu.optionval[4])
-      stats_menu.optionval[3] = -1*stats_menu.optionval[4];
-    if (stats_menu.optionval[3] < -1*stats_menu.optionval[4])
-      stats_menu.optionval[3] = stats_menu.optionval[4];
-    // max speed
-    if (stats_menu.optionval[4] > 127)
-      stats_menu.optionval[4] = 0;
-    if (stats_menu.optionval[4] < 0)
-      stats_menu.optionval[4] = 127;
-    // num of shots
-    if (stats_menu.optionval[5] > 255)
-      stats_menu.optionval[5] = 1;
-    if (stats_menu.optionval[5] < 1)
-      stats_menu.optionval[5] = 255;
-    // shot life
-    if (stats_menu.optionval[6] > 255)
-      stats_menu.optionval[6] = 5;
-    if (stats_menu.optionval[6] < 0)
-      stats_menu.optionval[6] = 255;
-    // shot lag
-    if (stats_menu.optionval[7] > 255)
-      stats_menu.optionval[7] = 0;
-    if (stats_menu.optionval[7] < 0)
-      stats_menu.optionval[7] = 255;
-    // shot base speed
-    if (stats_menu.optionval[8] > 255)
-      stats_menu.optionval[8] = 0;
-    if (stats_menu.optionval[8] < 0)
-      stats_menu.optionval[8] = 255;
-    // laser len
-    if (stats_menu.optionval[9] > 255)
-      stats_menu.optionval[9] = 0;
-    if (stats_menu.optionval[9] < 0)
-      stats_menu.optionval[9] = 255;
+    if (ev.type == ALLEGRO_EVENT_TIMER) {
+      // draw the options menu
+      draw_menu(dog, stats_menu);
+      al_draw_text(dog->font, dog->white, dog->w/2, TITLE_ROW*8, ALLEGRO_ALIGN_CENTRE, "Player Statistics");
+      // draw the current data next to each option
+      al_draw_bitmap(dog->plane[((int)stats_menu->optionval[0])], stats_menu->col+18*8, stats_menu->row-2, 0);
+      for (count = 1; count <= 9; count++) {
+        sprintf(stats_menu->optionval_str[count], "%2.2f", stats_menu->optionval[count]);
+        al_draw_text(dog->font, dog->white, stats_menu->col+18*8, stats_menu->row+count*16, 0, stats_menu->optionval_str[count]);
+      }
+      al_flip_display();
 
-    // draw the options menu
-    draw_menu(scrbuffer, main_data, stats_menu, stats_menu.row, stats_menu.col);
-    textout_centre_ex(scrbuffer, main_data[FONTLARGE].dat, "Player Statistics",
-                      SCREEN_W/2, TITLE_ROW*8, GREY+15, -1);
+    } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
+      move_menu_cursor(stats_menu, ev.keyboard.keycode);
 
-    // draw the current data next to each option
-    draw_sprite(scrbuffer, plane_data[((int)stats_menu.optionval[0])].dat,
-                stats_menu.col+18*8, stats_menu.row-2);
-    for (count = 1; count <= 9; count++) {
-      sprintf(stats_menu.optionval_str[count], "%2.2f", stats_menu.optionval[count]);
-      textout_ex(scrbuffer, font, stats_menu.optionval_str[count],
-                 stats_menu.col+18*8, stats_menu.row+count*16, YELLOW+15, -1);
+      // add or minus a set amount depending on which button was pressed
+      increment = 0.05;
+      if (stats_menu->selectupdn == -1)
+        increment *= -1;
+      switch (stats_menu->selection) {
+      case 1 : stats_menu->optionval[1] += increment; break; // turn
+      case 2 : stats_menu->optionval[2] += increment; break; // acceleration
+      };
+
+      // add or minus a set amount depending on which button was pressed
+      increment = 1;
+      if (stats_menu->selectupdn == -1)
+        increment *= -1;
+      switch (stats_menu->selection) {
+      case 0 : stats_menu->optionval[0] += increment; break; // plane
+      case 3 : stats_menu->optionval[3] += increment; break; // min speed
+      case 4 : stats_menu->optionval[4] += increment; break; // max speed
+      case 5 : stats_menu->optionval[5] += increment; break; // num of shots
+      case 6 : stats_menu->optionval[6] += increment; break; // shot life
+      case 7 : stats_menu->optionval[7] += increment; break; // shot lag
+      case 8 : stats_menu->optionval[8] += increment; break; // shot base speed
+      case 9 : stats_menu->optionval[9] += increment; break; // laser len
+      case 10: reset_type(cfgfile, stats_menu, stats_menu->optionval[0]); break;
+      };
+
+      // make sure options are within boundaries (boundaries will be different for
+      // each option)
+      // vehicle
+      if (stats_menu->optionval[0] > NUM_OF_VEHICLES-1)
+        stats_menu->optionval[0] = 0;
+      if (stats_menu->optionval[0] < 0)
+        stats_menu->optionval[0] = NUM_OF_VEHICLES-1;
+      // turn
+      if (stats_menu->optionval[1] > 3.10)
+        stats_menu->optionval[1] = 0;
+      if (stats_menu->optionval[1] < 0)
+        stats_menu->optionval[1] = 3.10;
+      // acceleration
+      if (stats_menu->optionval[2] > stats_menu->optionval[4])
+        stats_menu->optionval[2] = 0.05;
+      if (stats_menu->optionval[2] < 0)
+        stats_menu->optionval[2] = stats_menu->optionval[4];
+      // min speed
+      if (stats_menu->optionval[3] > stats_menu->optionval[4])
+        stats_menu->optionval[3] = -1*stats_menu->optionval[4];
+      if (stats_menu->optionval[3] < -1*stats_menu->optionval[4])
+        stats_menu->optionval[3] = stats_menu->optionval[4];
+      // max speed
+      if (stats_menu->optionval[4] > 127)
+        stats_menu->optionval[4] = 0;
+      if (stats_menu->optionval[4] < 0)
+        stats_menu->optionval[4] = 127;
+      // num of shots
+      if (stats_menu->optionval[5] > 255)
+        stats_menu->optionval[5] = 1;
+      if (stats_menu->optionval[5] < 1)
+        stats_menu->optionval[5] = 255;
+      // shot life
+      if (stats_menu->optionval[6] > 255)
+        stats_menu->optionval[6] = 5;
+      if (stats_menu->optionval[6] < 0)
+        stats_menu->optionval[6] = 255;
+      // shot lag
+      if (stats_menu->optionval[7] > 255)
+        stats_menu->optionval[7] = 0;
+      if (stats_menu->optionval[7] < 0)
+        stats_menu->optionval[7] = 255;
+      // shot base speed
+      if (stats_menu->optionval[8] > 255)
+        stats_menu->optionval[8] = 0;
+      if (stats_menu->optionval[8] < 0)
+        stats_menu->optionval[8] = 255;
+      // laser len
+      if (stats_menu->optionval[9] > 255)
+        stats_menu->optionval[9] = 0;
+      if (stats_menu->optionval[9] < 0)
+        stats_menu->optionval[9] = 255;
+      // reset the selection
+      stats_menu->selection = -1;
     }
 
-    blit(scrbuffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
 
-    // reset the selection
-    stats_menu.selection = -1;
-    // allow the user to make another selection
-    stats_menu = move_menu_cursor(stats_menu);
-
-  } while (stats_menu.selection != stats_menu.num_of_options-1);
+  } while (stats_menu->selection != stats_menu->num_of_options-1);
 
   // copy the values back into the options structure
-  options.vehicle         = stats_menu.optionval[0];
-  options.turn_speed      = stats_menu.optionval[1];
-  options.acceleration    = stats_menu.optionval[2];
-  options.min_speed       = stats_menu.optionval[3];
-  options.max_speed       = stats_menu.optionval[4];
-  options.num_of_shots    = stats_menu.optionval[5];
-  options.shot_life       = stats_menu.optionval[6];
-  options.shot_lag        = stats_menu.optionval[7];
-  options.shot_base_speed = stats_menu.optionval[8];
-  options.laser_length    = stats_menu.optionval[9];
-
-  return(options);
+  options->vehicle         = stats_menu->optionval[0];
+  options->turn_speed      = stats_menu->optionval[1];
+  options->acceleration    = stats_menu->optionval[2];
+  options->min_speed       = stats_menu->optionval[3];
+  options->max_speed       = stats_menu->optionval[4];
+  options->num_of_shots    = stats_menu->optionval[5];
+  options->shot_life       = stats_menu->optionval[6];
+  options->shot_lag        = stats_menu->optionval[7];
+  options->shot_base_speed = stats_menu->optionval[8];
+  options->laser_length    = stats_menu->optionval[9];
 }
 
 
 
-struct optionsinfo goto_options_menu(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data,
-                                     DATAFILE *plane_data, struct optionsinfo options,
-                                     struct menuinfo options_menu,
-                                     struct menuinfo stats_menu)
+void goto_options_menu(doginfo *dog, optionsinfo *options, menuinfo *options_menu, menuinfo *stats_menu)
 {
   // function controls the options menu
 
-  options_menu.highlight = 0;
+  options_menu->highlight = 0;
   do {
+    ALLEGRO_EVENT ev;
+
     // reset the selection
-    options_menu.selection = -1;
+    options_menu->selection = -1;
 
     // draw the options screen
-    draw_menu(scrbuffer, main_data, options_menu, options_menu.row, options_menu.col);
-    textout_centre_ex(scrbuffer, main_data[FONTLARGE].dat, "Options",
-                      SCREEN_W/2, TITLE_ROW*8, GREY+15, -1);
-    blit(scrbuffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
+    draw_menu(dog, options_menu);
+    al_draw_text(dog->font, dog->white, dog->w/2, TITLE_ROW*8, ALLEGRO_ALIGN_CENTRE, "Options");
+    al_flip_display();
 
-    options_menu = move_menu_cursor(options_menu);
+    al_wait_for_event(dog->event_queue, &ev);
 
-    if (options_menu.selection == 0) {
-      // go to the stats menu
-      options = goto_stats_menu(scrbuffer, main_data, plane_data, options, stats_menu);
-      options_menu.highlight = 0;
+    if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
+      move_menu_cursor(options_menu, ev.keyboard.keycode);
+      if (options_menu->selection == 0) {
+        // go to the stats menu
+        goto_stats_menu(dog, options, stats_menu);
+        options_menu->highlight = 0;
+      }
     }
 
-  } while (options_menu.selection != options_menu.num_of_options - 1);
-
-  return(options);
+  } while (options_menu->selection != options_menu->num_of_options - 1);
 }
 
 
 
-void base_title_page(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data, DATAFILE *plane_data,
-                     struct menuinfo title_menu)
+void draw_base_title_page(doginfo *dog, menuinfo *title_menu)
 {
   // function draws the base options list (ie - the title page)
 
-  draw_menu(scrbuffer, main_data, title_menu, title_menu.row, title_menu.col);
-  textout_centre_ex(scrbuffer, main_data[FONTLARGE].dat, "Dogfight", SCREEN_W/2,
-                    TITLE_ROW*8, GREY+15, -1);
-  blit(scrbuffer, screen, 0, 0, 0, 0, SCREEN_W, SCREEN_H);
-
+  draw_menu(dog, title_menu);
+  al_draw_text(dog->font, dog->white, dog->w/2, TITLE_ROW*8, ALLEGRO_ALIGN_CENTRE, "Dogfight");
 }
 
 
-
-void title_page(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data)
+void title_page(doginfo *dog)
 {
   // function sets up the title screen and allows access to the actual game
 
-  DATAFILE *plane_data, *explosion_data, *shot_data, *object_data;
-  struct menuinfo title_menu, options_menu, stats_menu;
-  struct optionsinfo options;
+  menuinfo title_menu, options_menu, stats_menu;
+  optionsinfo options;
   FILE *cfgfile;
-
-  // load game specific datafiles into memory
-  plane_data      = (DATAFILE *)main_data[PLANE].dat;
-  explosion_data  = (DATAFILE *)main_data[EXPLOSION].dat;
-  object_data     = (DATAFILE *)main_data[OBJECT].dat;
 
   title_menu.highlight = 0;
 
@@ -478,7 +418,7 @@ void title_page(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data)
   strcpy(title_menu.option[5], "Exit");
   title_menu.num_of_options = 6;
   title_menu.row = 25*8;
-  title_menu.col = SCREEN_W/2-78;
+  title_menu.col = dog->w/2-78;
   title_menu.fontsize = 2;
 
   strcpy(options_menu.option[0], "Player Statistics");
@@ -488,7 +428,7 @@ void title_page(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data)
   strcpy(options_menu.option[4], "Back");
   options_menu.num_of_options = 5;
   options_menu.row = 25*8;
-  options_menu.col = SCREEN_W/2-92;
+  options_menu.col = dog->w/2-92;
   options_menu.fontsize = 2;
 
   strcpy(stats_menu.option[0],  "Vehicle         :");
@@ -506,7 +446,7 @@ void title_page(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data)
   strcpy(stats_menu.option[12], "Return to Options Menu Without Saving");
   stats_menu.num_of_options = 13;
   stats_menu.row = 22*8;
-  stats_menu.col = SCREEN_W/3;
+  stats_menu.col = dog->w/3;
   stats_menu.fontsize = 1;
 
   // load the game's various options from the config file
@@ -552,36 +492,45 @@ void title_page(ALLEGRO_BITMAP *scrbuffer, DATAFILE *main_data)
 
   fclose(cfgfile);
 
-  // draw the title page and fade in to it
-  base_title_page(scrbuffer, main_data, plane_data, title_menu);
-  fade_in(pal, 5);
-
+  bool redraw = true;
   do {
+    ALLEGRO_EVENT ev;
+
+    al_wait_for_event(dog->event_queue, &ev);
+
     // reset the selection in case a game has just been exited
     title_menu.selection = -1;
 
-    // draw the title page
-    base_title_page(scrbuffer, main_data, plane_data, title_menu);
+    if (ev.type == ALLEGRO_EVENT_TIMER) {
+      redraw = true;
 
-    // move the cursor
-    title_menu = move_menu_cursor(title_menu);
+    } else if (ev.type == ALLEGRO_EVENT_KEY_DOWN) {
 
-    // start a game with the appropriate number of players
-    if (title_menu.selection >= 0 && title_menu.selection <= 2) {
-      fade_out(10);
-      game(scrbuffer, main_data, plane_data, explosion_data, object_data, options,
-           title_menu.selection+2);
+      move_menu_cursor(&title_menu, ev.keyboard.keycode);
 
-      // fix up the title screen before fading in to it
-      title_menu.highlight = 0;
-      base_title_page(scrbuffer, main_data, plane_data, title_menu);
-      fade_in(pal, 5);
+      // start a game with the appropriate number of players
+      if (title_menu.selection >= 0 && title_menu.selection <= 2) {
+        options.players = title_menu.selection+2;
+        //game(dog, &options);
+
+        // fix up the title screen before fading in to it
+        title_menu.highlight = 0;
+        draw_base_title_page(dog, &title_menu);
+
+      } else if (title_menu.selection == 3) {
+        // go to the options sub menu
+        goto_options_menu(dog, &options, &options_menu, &stats_menu);
+        title_menu.highlight = 0;
+      }
+
+    } else if (ev.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+      break;
     }
-    else if (title_menu.selection == 3) {
-      // go to the options sub menu
-      options = goto_options_menu(scrbuffer, main_data, plane_data, options, options_menu,
-                                  stats_menu);
-      title_menu.highlight = 0;
+
+    if (redraw && al_is_event_queue_empty(dog->event_queue)) {
+      // draw the title page
+      draw_base_title_page(dog, &title_menu);
+      al_flip_display();
     }
 
   } while (title_menu.selection != title_menu.num_of_options-1);
