@@ -737,9 +737,9 @@ char move_planes(doginfo *dog, const ALLEGRO_KEYBOARD_STATE *kb, playerinfo *pla
           if (last_shot == 0 || last_shot < options->shot_life - options->shot_lag) {
             // fire!! - set up shot info
             player[count].shot[shot_count].life    = options->shot_life;
-            player[count].shot[shot_count].x       = (player[count].x+PLANE_SIZE_W/2)
+            player[count].shot[shot_count].x       = player[count].x
               + (cos(player[count].heading));
-            player[count].shot[shot_count].y       = (player[count].y+PLANE_SIZE_H/2)
+            player[count].shot[shot_count].y       = player[count].y
               + (sin(player[count].heading));
             player[count].shot[shot_count].speed   = options->shot_base_speed
               + player[count].speed;
