@@ -139,9 +139,10 @@ void draw_clouds(doginfo *dog, optionsinfo *options)
 {
   // function draws clouds onto the given bitmap
   // (or other objects that can be passed through)
-
+  al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
   al_draw_bitmap(dog->cloud, dog->w*1/4 - 100, dog->h*3/4 - 60, 0);
   al_draw_bitmap(dog->cloud, dog->w*3/4 - 200, dog->h*1/4 - 60, 0);
+  al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_INVERSE_ALPHA);
 }
 
 
@@ -268,27 +269,21 @@ void draw_parachute(doginfo *dog, playerinfo *player, optionsinfo *options, char
 
   if (!player[count].parachute.splatting) {
     // parachutes
-    ALLEGRO_BITMAP *parabuffer = al_create_bitmap(PARACHUTE_SIZE_W, PARACHUTE_SIZE_H);
+    ALLEGRO_BITMAP *para =
+      player[count].parachute.status == HAPPY
+      ? dog->parachute
+      : dog->parafall;
 
-    al_set_target_bitmap(parabuffer);
-    // copy the parachute bitmap onto a buffer
-    if (player[count].parachute.status == HAPPY)
-      al_draw_bitmap(dog->parachute, 0, 0, 0);
-    else
-      al_draw_bitmap(dog->parafall, 0, 0, 0);
-    al_set_target_bitmap(al_get_backbuffer(dog->display));
-
-    // paint the parachute
-    //paint(parabuffer, PAL_DIFFERENCE*(count+2));
-
+    int flags = 0;
     // draw the parachute
-    if (player[count].parachute.mirror <= 2)
-      al_draw_bitmap(parabuffer,player[count].parachute.x, player[count].parachute.y, ALLEGRO_FLIP_HORIZONTAL);
-    else if (player[count].parachute.mirror > 2)
-      al_draw_bitmap(parabuffer,player[count].parachute.x, player[count].parachute.y, 0);
+    if (player[count].parachute.mirror > 2)
+      flags |= ALLEGRO_FLIP_VERTICAL;
 
-    al_destroy_bitmap(parabuffer);
-  } else if (player[count].parachute.splatting) {
+    al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
+    al_draw_bitmap(para, player[count].parachute.x, player[count].parachute.y, flags);
+    al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_INVERSE_ALPHA);
+
+  } else {
     // splats
     // TODO
     /* drawing_mode(DRAW_MODE_TRANS, 0, 0, 0); */
@@ -298,7 +293,6 @@ void draw_parachute(doginfo *dog, playerinfo *player, optionsinfo *options, char
     /*              player[count].parachute.blood[4][blood_count]); */
     /* drawing_mode(DRAW_MODE_SOLID, 0, 0, 0); */
   }
-
 }
 
 
@@ -339,14 +333,9 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
 {
   // function draws the game screen
 
-  ALLEGRO_BITMAP *spritebuffer;
   float angle;
   char explosion;
   int count;
-  float explosion_x, explosion_y;
-
-  // allocate memory for sprite buffer
-  spritebuffer = al_create_bitmap(PLANE_SIZE_W, PLANE_SIZE_H);
 
   // clear screen buffer to the background
   if (options->vehicle == 2)
@@ -359,72 +348,38 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
 
     // draw the planes
     if (player[count].exploding < PLANE_HIT_LIFE && player[count].status != GONE) {
-      // clear the sprite buffer (this is a loop - other planes could be drawn in it)
-      //clear(spritebuffer);
-
-      al_set_target_bitmap(spritebuffer);
-      al_clear_to_color(al_map_rgb(0,0,0));
-
-      // copy the plane bitmap onto a sprite buffer, flipping it if necessary
-      if (player[count].flip)
-        al_draw_bitmap(dog->plane[options->vehicle], 0, 0, ALLEGRO_FLIP_HORIZONTAL);
-      else
-        al_draw_bitmap(dog->plane[options->vehicle], 0, 0, 0);
-
-      // paint the planes different colours
-      // TODO
-      /* if (player[count].invincible) */
-      /*   paint(spritebuffer, RED + (player[count].invincible */
-      /*                              * ORANGE/options->invincibility_life) * (count+1)/(options->players+1)); */
-      /* else */
-      /*   paint(spritebuffer, PAL_DIFFERENCE*(count+2)); */
-
-      al_set_target_bitmap(al_get_backbuffer(dog->display));
-
+      int flags = player[count].flip ? ALLEGRO_FLIP_VERTICAL : 0;
       angle = player[count].heading;
 
       // debugging information
       // CIRCULAR HIT DETECTION CIRCLE
-      //circle(scrbuffer, player[count].x+PLANE_SIZE_W/2, player[count].y+PLANE_SIZE_H/2,
-      //       PLANE_HIT_RADIUS, GREEN+15);
+      al_draw_circle(player[count].x, player[count].y,
+                     PLANE_HIT_RADIUS, dog->white, 2);
 
       // draw the plane
-      al_draw_rotated_bitmap(spritebuffer,
+      al_draw_rotated_bitmap(dog->plane[options->vehicle],
                              PLANE_SIZE_W/2, PLANE_SIZE_H/2,
                              player[count].x, player[count].y,
-                             angle, 0);
-
-      // debugging information
-      // cross hair marking centre of each plane
-      //line(scrbuffer, player[count].x+PLANE_SIZE_W/2, player[count].y+PLANE_SIZE_H/2-5,
-      //     player[count].x+PLANE_SIZE_W/2, player[count].y+PLANE_SIZE_H/2+5, GREY+15);
-      //line(scrbuffer, player[count].x+PLANE_SIZE_W/2-5, player[count].y+PLANE_SIZE_H/2,
-      //     player[count].x+PLANE_SIZE_W/2+5, player[count].y+PLANE_SIZE_H/2, GREY+15);
-
-      // cross hair marking front of each plane
-      //line(scrbuffer, player[count].x+PLANE_SIZE_W/2, player[count].y+PLANE_SIZE_H/2-5,
-      //     player[count].x+PLANE_SIZE_W/2, player[count].y+PLANE_SIZE_H/2+5, GREY+15);
-      //line(scrbuffer, player[count].x+PLANE_SIZE_W/2-5, player[count].y+PLANE_SIZE_H/2,
-      //     player[count].x+PLANE_SIZE_W/2+5, player[count].y+PLANE_SIZE_H/2, GREY+15);
+                             angle, flags);
 
       // optionally draw an explosion on top
-      if (player[count].exploding && player[count].exploding < 10) {
-        explosion = player[count].exploding-1;
-        explosion_x = (player[count].x + PLANE_SIZE_W/2) - EXPLOSION_SIZE_W/2;
-        explosion_y = (player[count].y + PLANE_SIZE_H/2) - EXPLOSION_SIZE_H/2;
+      if (false && player[count].exploding && player[count].exploding < 10) {
+        explosion = player[count].exploding - 1;
+        if (explosion >= 8)
+          explosion = 8;
 
+        al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
         al_draw_rotated_bitmap(dog->explosion[explosion],
                                EXPLOSION_SIZE_W/2, EXPLOSION_SIZE_H/2,
-                               explosion_x, explosion_y,
+                               player[count].x, player[count].y,
                                angle, 0);
+        al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_INVERSE_ALPHA);
       }
       // draw any shots
       draw_shots(dog, &player[0], options, count);
     }
 
     if (player[count].parachute.status == HAPPY || player[count].parachute.status == WORRIED) {
-      // draw a nice, safe, pleasant little parachute
-
       // debugging information
       // CIRCULAR HIT DETECTION CIRCLE
       //circle(scrbuffer, player[count].parachute.x+PARACHUTE_SIZE_W/2,
@@ -434,18 +389,17 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
     }
 
     if (player[count].exploding >= PLANE_HIT_LIFE) {
+      al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
       // draw an explosion *instead* of the plane
       // goes last to 'cover' parachutes etc
       explosion = player[count].exploding-1;
-      explosion_x = (player[count].x + PLANE_SIZE_W/2) - EXPLOSION_SIZE_W/2;
-      explosion_y = (player[count].y + PLANE_SIZE_H/2) - EXPLOSION_SIZE_H/2;
       angle = player[count].heading;
       al_draw_rotated_bitmap(dog->explosion[explosion],
                              EXPLOSION_SIZE_W/2, EXPLOSION_SIZE_H/2,
-                             explosion_x, explosion_y,
+                             player[count].x, player[count].y,
                              angle, 0);
+      al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_INVERSE_ALPHA);
     }
-
   }
 
   // draw everything else
@@ -453,8 +407,6 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
     draw_clouds(dog, options);
 
   draw_stats(dog, &player[0], options);
-
-  al_destroy_bitmap(spritebuffer);
 }
 
 
@@ -512,10 +464,8 @@ void detect_collisions(doginfo *dog, playerinfo *player, optionsinfo *options)
           // CIRCULAR HIT DETECTION METHOD - working a lot better :)
           // PLANES
           // if plane hits plane
-          if ( sqrt( pow(((player[plane_count].x + PLANE_SIZE_W/2)
-                          - (player[check_count].x + PLANE_SIZE_W/2)), 2)
-                     + pow(((player[plane_count].y + PLANE_SIZE_H/2)
-                            - (player[check_count].y + PLANE_SIZE_H/2)), 2) )
+          if ( sqrt( pow(((player[plane_count].x) - (player[check_count].x)), 2)
+                     + pow(((player[plane_count].y) - (player[check_count].y)), 2) )
                <= PLANE_HIT_RADIUS * 2 ) // because we're talking about 2 planes,
             // not a point and a plane
             {
@@ -553,10 +503,10 @@ void detect_collisions(doginfo *dog, playerinfo *player, optionsinfo *options)
               //     player[check_count].y+PLANE_SIZE_H/2, YELLOW+15);
 
               // if shot hits plane
-              if ( sqrt( pow(((player[plane_count].shot[shot_count].x+SHOT_SIZE_W/2)
-                              - (player[check_count].x+PLANE_SIZE_W/2)), 2)
-                         + pow(((player[plane_count].shot[shot_count].y+SHOT_SIZE_H/2)
-                                - (player[check_count].y+PLANE_SIZE_H/2)), 2) )
+              if ( sqrt( pow(((player[plane_count].shot[shot_count].x)
+                              - (player[check_count].x)), 2)
+                         + pow(((player[plane_count].shot[shot_count].y)
+                                - (player[check_count].y)), 2) )
                    <= PLANE_HIT_RADIUS + SHOT_HIT_RADIUS )
                 {
                   explode_player(&player[0], check_count);
@@ -577,21 +527,21 @@ void detect_collisions(doginfo *dog, playerinfo *player, optionsinfo *options)
       for (check_count = 0; check_count < options->players; check_count++) {
         if (check_count != plane_count && player[check_count].status != GONE) {
           // if plane hits parachute
-          if ( sqrt( pow(((player[plane_count].parachute.x+PARACHUTE_SIZE_W/2)
-                          - (player[check_count].x+PLANE_SIZE_W/2)), 2)
-                     + pow(((player[plane_count].parachute.y+PARACHUTE_SIZE_H/2)
-                            - (player[check_count].y+PLANE_SIZE_H/2)), 2) )
+          if ( sqrt( pow(((player[plane_count].parachute.x)
+                          - (player[check_count].x)), 2)
+                     + pow(((player[plane_count].parachute.y)
+                            - (player[check_count].y)), 2) )
                <= PARACHUTE_HIT_RADIUS + PLANE_HIT_RADIUS )
             {
               player[plane_count].parachute.status = WORRIED;
             }
-  
+
           for (shot_count = 0; shot_count < options->num_of_shots; shot_count++) {
             if (player[check_count].shot[shot_count].life) {
-              if ( sqrt( pow(((player[plane_count].parachute.x+PARACHUTE_SIZE_W/2)
-                              - (player[check_count].shot[shot_count].x+SHOT_SIZE_W/2)), 2)
-                         + pow(((player[plane_count].parachute.y+PARACHUTE_SIZE_H/2)
-                                - (player[check_count].shot[shot_count].y+SHOT_SIZE_H/2)), 2) )
+              if ( sqrt( pow(((player[plane_count].parachute.x)
+                              - (player[check_count].shot[shot_count].x)), 2)
+                         + pow(((player[plane_count].parachute.y)
+                                - (player[check_count].shot[shot_count].y)), 2) )
                    <= PARACHUTE_HIT_RADIUS + SHOT_HIT_RADIUS )
                 {
                   player[plane_count].parachute.status = WORRIED;
@@ -603,7 +553,6 @@ void detect_collisions(doginfo *dog, playerinfo *player, optionsinfo *options)
     } // end if parachute happy
 
   } // end plane_count
-
 }
 
 
@@ -876,7 +825,7 @@ char move_planes(doginfo *dog, const ALLEGRO_KEYBOARD_STATE *kb, playerinfo *pla
 
     // explosions "wear off"
     if (player[count].exploding)
-      player[count].exploding += options->explosion_speed;
+      player[count].exploding += 1;
     if (player[count].exploding >= 10) {
       player[count].exploding = 0;
       player[count].status = GONE;
@@ -1013,8 +962,6 @@ void game(doginfo *dog, optionsinfo *options)
   while (!end) {
     ALLEGRO_EVENT ev;
     al_wait_for_event(dog->event_queue, &ev);
-
-    printf("LOOPING\n");
 
     if (ev.type == ALLEGRO_EVENT_TIMER) {
       redraw = true;

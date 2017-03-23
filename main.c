@@ -11,7 +11,7 @@ const uint SET_W = 640;
 const uint SET_H = 480;
 
 // frames per second
-const float FPS = 60;
+const float FPS = 10;
 
 int load_bitmap(ALLEGRO_BITMAP **bmp, const char *path) {
   ALLEGRO_DISPLAY *display = al_get_current_display();
@@ -104,6 +104,9 @@ int main(int argc, char **argv){
   if ((r = load_bitmap(&dog.explosion[6], "data/explsn07.png")) != 0) { return r; }
   if ((r = load_bitmap(&dog.explosion[7], "data/explsn08.png")) != 0) { return r; }
   if ((r = load_bitmap(&dog.explosion[8], "data/explsn09.png")) != 0) { return r; }
+  if ((r = load_bitmap(&dog.plane[0], "data/plane01.png")) != 0) { return r; }
+  if ((r = load_bitmap(&dog.plane[1], "data/plane02.png")) != 0) { return r; }
+  if ((r = load_bitmap(&dog.plane[2], "data/plane03.png")) != 0) { return r; }
   if ((r = load_bitmap(&dog.cursor, "data/cursor.png")) != 0) { return r; }
 
   dog.black = al_map_rgb(0, 0, 0);
