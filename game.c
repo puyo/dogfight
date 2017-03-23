@@ -936,8 +936,8 @@ void game(doginfo *dog, optionsinfo *options)
   // do a countdown to build suspense!
   for (countdown = 3; countdown >= 1; countdown--) {
     snprintf(countdown_string, 3, "%d", countdown);
-    al_draw_text(dog->font, dog->white, dog->w/2, dog->h/2, ALLEGRO_ALIGN_CENTRE, countdown_string);
     draw_screen(dog, &player[0], options);
+    al_draw_text(dog->font, dog->white, dog->w/2, dog->h/2, ALLEGRO_ALIGN_CENTRE, countdown_string);
     al_flip_display();
     al_rest(1.0);
   }
