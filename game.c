@@ -76,19 +76,15 @@ typedef struct playerinfo {
   float speed;
   double heading;
   int start_x, start_y;
-
   char key_up, key_down, key_left, key_right, key_fire;
-
   ALLEGRO_COLOR colour;
   char flip;
   char status;
   float exploding;
   char invincible;
   char kills[5];              // room for total kills
-
   shotinfo shot[256];  // room for up to 256 shots
   parachuteinfo parachute;
-
 } playerinfo;
 
 // ***** MAIN PROGRAM CODE **************************************************************
@@ -111,7 +107,6 @@ void randomize_array(int *array, int end, float rand_min, float rand_max)
     r = rand_mid
       + ((random() % (int)(rand_max - rand_mid))
          * cos((float)((random() % 180) + 1) * M_PI/180));
-
     array[rand_count] = r;
   }
 }
