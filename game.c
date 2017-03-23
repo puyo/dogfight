@@ -30,23 +30,6 @@
 // variable level constants
 #define PARA_VELOCITY          6                  // parachute terminal velocity
 
-
-// colours (NB: these are values for "base" colours which are the darkest versions
-//              of these colours)
-// to brighten a colour, add a number between 1 and 15 to it
-// adding 16 will choose the next colour - this number (16) is defined as PAL_DIFFERENCE
-#define GREY                  16
-#define RED                   32
-#define BLUE                  48
-#define YELLOW                64
-#define PURPLE                80
-#define GREEN                 96
-#define ORANGE               112
-
-#define PAL_DIFFERENCE        16                // difference between palette colours
-                                                // (ie. RED + PAL_DIFFERENCE = BLUE
-                                                // see palette order above)
-
 #define GORE_LEVEL             5                // controls various things such as
                                                 // how high/wide blood spurts after
                                                 // a splat (<20 but <5 recommended Wil!)
@@ -96,15 +79,15 @@ typedef struct playerinfo {
 
   char key_up, key_down, key_left, key_right, key_fire;
 
-  int colour;
+  ALLEGRO_COLOR colour;
   char flip;
   char status;
   float exploding;
   char invincible;
   char kills[5];              // room for total kills
 
-  struct shotinfo shot[256];  // room for up to 256 shots
-  struct parachuteinfo parachute;
+  shotinfo shot[256];  // room for up to 256 shots
+  parachuteinfo parachute;
 
 } playerinfo;
 
@@ -236,26 +219,35 @@ void draw_stats(doginfo *dog, playerinfo *player, optionsinfo *options)
 
 
 
-void paint(ALLEGRO_BITMAP *sprite, int colour_new)
+void paint(ALLEGRO_BITMAP *sprite, ALLEGRO_COLOR colour_new)
 {
   // function checks each pixel of a bitmap and on finding red pixels, changes them
   // to the given colour equivalent
-
+  ALLEGRO_BITMAP *t = al_get_target_bitmap();
   int x, y, w, h;
+  unsigned char r, g, b, i;
+  unsigned char nr, ng, nb;
   ALLEGRO_COLOR colour_old, colour_equiv;
   w = al_get_bitmap_width(sprite);
   h = al_get_bitmap_height(sprite);
 
+  al_unmap_rgb(colour_new, &nr, &ng, &nb);
+
+  al_set_target_bitmap(sprite);
+
   for (y = 0; y <= h; y++) {
     for (x = 0; x <= w; x++) {
       colour_old = al_get_pixel(sprite, x, y);
-      // TODO
-      /* if (colour_old >= RED && colour_old <= RED+15) { // is able to be changed */
-      /*   colour_equiv = colour_new + (colour_old-32); */
-      /*   al_put_pixel(sprite, x, y, colour_equiv); */
-      /* } */
+      al_unmap_rgb(colour_old, &r, &g, &b);
+      if (r > 0 && g == 0 && b == 0) {
+        i = r;
+        colour_equiv = al_map_rgb(i * nr / 255, i * ng / 255, i * nb / 255);
+        al_put_pixel(x, y, colour_equiv);
+      }
     }
   }
+
+  al_set_target_bitmap(t);
 }
 
 
@@ -356,11 +348,14 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
       al_draw_circle(player[count].x, player[count].y,
                      PLANE_HIT_RADIUS, dog->white, 2);
 
+      ALLEGRO_BITMAP *plane = al_clone_bitmap(dog->plane[options->vehicle]);
+      paint(plane, player[count].colour);
       // draw the plane
-      al_draw_rotated_bitmap(dog->plane[options->vehicle],
+      al_draw_rotated_bitmap(plane,
                              PLANE_SIZE_W/2, PLANE_SIZE_H/2,
                              player[count].x, player[count].y,
                              angle, flags);
+      al_destroy_bitmap(plane);
 
       // optionally draw an explosion on top
       if (false && player[count].exploding && player[count].exploding < 10) {
@@ -617,6 +612,7 @@ void initiate_variables(doginfo *dog, playerinfo *player, optionsinfo *options)
   player[0].key_right   = ALLEGRO_KEY_RIGHT;
   player[0].key_fire    = ALLEGRO_KEY_SLASH;
   player[0].flip        = 0;
+  player[0].colour      = al_map_rgb(255, 0, 0);
 
   player[1].start_x     = P2_START_X;
   player[1].start_y     = P2_START_Y;
@@ -627,6 +623,7 @@ void initiate_variables(doginfo *dog, playerinfo *player, optionsinfo *options)
   player[1].key_right   = ALLEGRO_KEY_D;
   player[1].key_fire    = ALLEGRO_KEY_Q;
   player[1].flip        = 1;
+  player[1].colour      = al_map_rgb(0, 0, 255);
 
   player[2].start_x     = P3_START_X;
   player[2].start_y     = P3_START_Y;
@@ -637,6 +634,7 @@ void initiate_variables(doginfo *dog, playerinfo *player, optionsinfo *options)
   player[2].key_right   = ALLEGRO_KEY_J;
   player[2].key_fire    = ALLEGRO_KEY_T;
   player[2].flip        = 0;
+  player[2].colour      = al_map_rgb(0, 255, 0);
 
   player[3].start_x     = P4_START_X;
   player[3].start_y     = P4_START_Y;
@@ -647,6 +645,7 @@ void initiate_variables(doginfo *dog, playerinfo *player, optionsinfo *options)
   player[3].key_right   = ALLEGRO_KEY_QUOTE;
   player[3].key_fire    = ALLEGRO_KEY_O;
   player[3].flip        = 1;
+  player[3].colour      = al_map_rgb(255, 255, 0);
 
   for (count = 0; count < MAX_PLAYERS; count++) {
     player[count].x                   = player[count].start_x;
@@ -891,8 +890,8 @@ char move_planes(doginfo *dog, const ALLEGRO_KEYBOARD_STATE *kb, playerinfo *pla
       rand_max = player[count].parachute.speed * GORE_LEVEL * -0.25;
       randomize_array(&player[count].parachute.blood[3][0], BLOOD, rand_min, rand_max);
       // colour
-      rand_min = RED;
-      rand_max = RED+15;
+      rand_min = 0;
+      rand_max = 15;
       //srandom(player[count].parachute.speed+2);
       randomize_array(&player[count].parachute.blood[4][0], BLOOD, rand_min, rand_max);
 

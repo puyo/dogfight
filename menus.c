@@ -20,18 +20,6 @@ char *strlwr(char *str)
 
 #define TITLE_ROW             6
 
-// colours (NB: these are values for "base" colours which are the darkest versions
-//              of these colours)
-// to brighten a colour, add a number between 1 and 15 to it
-// adding 16 will choose the next colour - this number (16) is defined as PAL_DIFFERENCE
-#define GREY                 16
-#define RED                  32
-#define BLUE                 48
-#define YELLOW               64
-#define PURPLE               80
-#define GREEN                96
-#define ORANGE              112
-
 // ***** TYPE DEFINITIONS ***************************************************************
 
 // structure contains info for the menu on the title page & sub menus
