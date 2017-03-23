@@ -50,8 +50,9 @@ typedef struct optionsinfo {
   char coralie;
 } optionsinfo;
 
-void game(doginfo *dog, optionsinfo *options);
-void title_page(doginfo *dog);
 
+void game(doginfo *dog, optionsinfo *options);
+
+void title_page(doginfo *dog);
 
 #endif

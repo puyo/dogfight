@@ -511,7 +511,7 @@ void title_page(doginfo *dog)
       // start a game with the appropriate number of players
       if (title_menu.selection >= 0 && title_menu.selection <= 2) {
         options.players = title_menu.selection+2;
-        //game(dog, &options);
+        game(dog, &options);
 
         // fix up the title screen before fading in to it
         title_menu.highlight = 0;
