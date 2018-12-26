@@ -7,11 +7,11 @@
 #include "dogfight.h"
 
 // resolution
-const uint SET_W = 2*640;
-const uint SET_H = 2*480;
+const uint SET_W = 3*640;
+const uint SET_H = 3*480;
 
 // frames per second
-const float FPS = 10;
+const float FPS = 60;
 
 int load_bitmap(ALLEGRO_BITMAP **bmp, const char *path) {
   ALLEGRO_DISPLAY *display = al_get_current_display();
