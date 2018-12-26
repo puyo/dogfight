@@ -88,49 +88,63 @@ double read_value(FILE *fp, char headchar_spef, char *heading, char *string)
   rewind(fp);
 
   // read every line of the file until the heading is found
-  do {
+  for(;;) {
     // read the next line from the file
     fgets(check_str, 256, fp);
-    strcpy(check_str, strlwr(check_str));
-    headchar = check_str[0];
-  } while (strstr(check_str, heading) == NULL
-           && (!feof(fp) || headchar != headchar_spef)
-           && !feof(fp));
 
-  if (strstr(check_str, heading) != NULL) {
-    // read every line of the file until the string is matched
-    do {
-      // read the next line from the file
-      fgets(check_str, 256, fp);
-      strcpy(check_str, (char *)strlwr(check_str));
-      headchar = check_str[0];
-    } while (strstr(check_str, string) == NULL && headchar != headchar_spef && !feof(fp));
+    if (feof(fp)) {
+      printf("EOF reached trying to read value %c %s %s\n", headchar_spef, heading, string);
+      exit(1);
+    }
 
-    if (strstr(check_str, string) != NULL) {
-
-      // find '=' in the string
-      equals = 0;
-      while (check_str[equals] != '=') {
-        equals++;
-      };
-
-      // copy the rest of the string to the value string
-      count = 0;
-      c = ' ';
-      strcpy(value_str, "0\n");
-      do {
-        count++;
-        c = check_str[equals+count];
-        value_str[count-1] = c;
-      } while (check_str[equals+count+1] != '\n');
-      value_str[count] = '\n';
-
-      // convert the string after the '=' to a value and return it
-      value = strtod(value_str, &end);
-      return value;
+    if (headchar_spef == check_str[0] && strstr(check_str, heading) != NULL) {
+      break;
     }
   }
-  return 0.0;
+
+  // read every line of the file until the string is matched
+  for(;;) {
+    // read the next line from the file
+    fgets(check_str, 256, fp);
+
+    if (feof(fp)) {
+      printf("EOF reached trying to read value %c %s %s\n", headchar_spef, heading, string);
+      exit(1);
+    }
+
+    /* strcpy(check_str, (char *)strlwr(check_str)); */
+    headchar = check_str[0];
+
+    if (headchar_spef == check_str[0]) {
+      printf("Could not find config value %s in section %s\n", string, heading);
+      exit(1);
+    }
+
+    if (strstr(check_str, string) != NULL) {
+      break;
+    }
+  }
+
+  // find '=' in the string
+  equals = 0;
+  while (check_str[equals] != '=') {
+    equals++;
+  };
+
+  // copy the rest of the string to the value string
+  count = 0;
+  c = ' ';
+  strcpy(value_str, "0\n");
+  do {
+    count++;
+    c = check_str[equals+count];
+    value_str[count-1] = c;
+  } while (check_str[equals+count+1] != '\n');
+  value_str[count] = '\n';
+
+  // convert the string after the '=' to a value and return it
+  value = strtod(value_str, &end);
+  return value;
 }
 
 
@@ -146,7 +160,7 @@ void reset_type(FILE *cfgfile, menuinfo *stats_menu, int vehicle)
   cfgfile = fopen("dogfight.cfg", "r");
 
   // generate the vehicle heading required
-  strcpy(vehicle_str, "vehicle ");
+  strcpy(vehicle_str, "VEHICLE ");
   fixed_str(vehicle_number_str, vehicle, 2);
   strcat(vehicle_str, vehicle_number_str);
 
@@ -443,23 +457,23 @@ void title_page(doginfo *dog)
   // load the game's various options from the config file
   cfgfile = fopen("dogfight.cfg", "r");
 
-  /* options.vehicle      = stats_menu.optionval[0] = read_value(cfgfile, '@', "user vehicle", "vehicle"); */
-  /* options.turn_speed   = stats_menu.optionval[1] = read_value(cfgfile, '@', "user vehicle", "turn_speed"); */
-  /* options.acceleration = stats_menu.optionval[2] = read_value(cfgfile, '@', "user vehicle", "acceleration"); */
-  /* options.min_speed    = stats_menu.optionval[3] = read_value(cfgfile, '@', "user vehicle", "min_speed"); */
-  /* options.max_speed    = stats_menu.optionval[4] = read_value(cfgfile, '@', "user vehicle", "max_speed"); */
-  /* options.num_of_shots = stats_menu.optionval[5] = read_value(cfgfile, '@', "user vehicle", "num_of_shots"); */
-  /* options.shot_life    = stats_menu.optionval[6] = read_value(cfgfile, '@', "user vehicle", "shot_life"); */
-  /* options.shot_lag     = stats_menu.optionval[7] = read_value(cfgfile, '@', "user vehicle", "shot_lag"); */
-  /* options.shot_base_speed = stats_menu.optionval[8] = read_value(cfgfile, '@', "user vehicle", "shot_base_speed"); */
-  /* options.laser_length    = stats_menu.optionval[9] = read_value(cfgfile, '@', "user vehicle", "laser_length"); */
+  options.vehicle      = stats_menu.optionval[0] = read_value(cfgfile, '@', "USER VEHICLE", "vehicle");
+  options.turn_speed   = stats_menu.optionval[1] = read_value(cfgfile, '@', "USER VEHICLE", "turn_speed");
+  options.acceleration = stats_menu.optionval[2] = read_value(cfgfile, '@', "USER VEHICLE", "acceleration");
+  options.min_speed    = stats_menu.optionval[3] = read_value(cfgfile, '@', "USER VEHICLE", "min_speed");
+  options.max_speed    = stats_menu.optionval[4] = read_value(cfgfile, '@', "USER VEHICLE", "max_speed");
+  options.num_of_shots = stats_menu.optionval[5] = read_value(cfgfile, '@', "USER VEHICLE", "num_of_shots");
+  options.shot_life    = stats_menu.optionval[6] = read_value(cfgfile, '@', "USER VEHICLE", "shot_life");
+  options.shot_lag     = stats_menu.optionval[7] = read_value(cfgfile, '@', "USER VEHICLE", "shot_lag");
+  options.shot_base_speed = stats_menu.optionval[8] = read_value(cfgfile, '@', "USER VEHICLE", "shot_base_speed");
+  options.laser_length    = stats_menu.optionval[9] = read_value(cfgfile, '@', "USER VEHICLE", "laser_length");
 
-  /* options.gravity            = read_value(cfgfile, '@', "user level", "gravity"); */
-  /* options.backdrop           = read_value(cfgfile, '@', "user level", "backdrop"); */
-  /* options.cloud_type         = read_value(cfgfile, '@', "user level", "cloud_type"); */
-  /* options.invincibility_life = read_value(cfgfile, '@', "options",    "invincibility_life"); */
-  /* options.explosion_speed    = read_value(cfgfile, '@', "options",    "explosion_speed"); */
-  /* options.coralie            = read_value(cfgfile, '@', "options",    "coralie_mode"); */
+  options.gravity            = read_value(cfgfile, '@', "USER LEVEL", "gravity");
+  options.backdrop           = read_value(cfgfile, '@', "USER LEVEL", "backdrop");
+  options.cloud_type         = read_value(cfgfile, '@', "USER LEVEL", "cloud_type");
+  options.invincibility_life = read_value(cfgfile, '@', "OPTIONS",    "invincibility_life");
+  options.explosion_speed    = read_value(cfgfile, '@', "OPTIONS",    "explosion_speed");
+  options.coralie            = read_value(cfgfile, '@', "OPTIONS",    "coralie_mode");
 
   fclose(cfgfile);
 
