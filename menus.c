@@ -440,43 +440,23 @@ void title_page(doginfo *dog)
   // load the game's various options from the config file
   cfgfile = fopen("dogfight.cfg", "r");
 
-  options.vehicle      = stats_menu.optionval[0] = read_value(cfgfile, '@',
-                                                              "user vehicle",
-                                                              "vehicle");
-  options.turn_speed   = stats_menu.optionval[1] = read_value(cfgfile, '@',
-                                                              "user vehicle",
-                                                              "turn_speed");
-  options.acceleration = stats_menu.optionval[2] = read_value(cfgfile, '@',
-                                                              "user vehicle",
-                                                              "acceleration");
-  options.min_speed    = stats_menu.optionval[3] = read_value(cfgfile, '@',
-                                                              "user vehicle",
-                                                              "min_speed");
-  options.max_speed    = stats_menu.optionval[4] = read_value(cfgfile, '@',
-                                                              "user vehicle",
-                                                              "max_speed");
-  options.num_of_shots = stats_menu.optionval[5] = read_value(cfgfile, '@',
-                                                              "user vehicle",
-                                                              "num_of_shots");
-  options.shot_life    = stats_menu.optionval[6] = read_value(cfgfile, '@',
-                                                              "user vehicle",
-                                                              "shot_life");
-  options.shot_lag     = stats_menu.optionval[7] = read_value(cfgfile, '@',
-                                                              "user vehicle",
-                                                              "shot_lag");
-  options.shot_base_speed = stats_menu.optionval[8] = read_value(cfgfile, '@',
-                                                                 "user vehicle",
-                                                                 "shot_base_speed");
-  options.laser_length    = stats_menu.optionval[9] = read_value(cfgfile, '@',
-                                                                 "user vehicle",
-                                                                 "laser_length");
+  /* options.vehicle      = stats_menu.optionval[0] = read_value(cfgfile, '@', "user vehicle", "vehicle"); */
+  /* options.turn_speed   = stats_menu.optionval[1] = read_value(cfgfile, '@', "user vehicle", "turn_speed"); */
+  /* options.acceleration = stats_menu.optionval[2] = read_value(cfgfile, '@', "user vehicle", "acceleration"); */
+  /* options.min_speed    = stats_menu.optionval[3] = read_value(cfgfile, '@', "user vehicle", "min_speed"); */
+  /* options.max_speed    = stats_menu.optionval[4] = read_value(cfgfile, '@', "user vehicle", "max_speed"); */
+  /* options.num_of_shots = stats_menu.optionval[5] = read_value(cfgfile, '@', "user vehicle", "num_of_shots"); */
+  /* options.shot_life    = stats_menu.optionval[6] = read_value(cfgfile, '@', "user vehicle", "shot_life"); */
+  /* options.shot_lag     = stats_menu.optionval[7] = read_value(cfgfile, '@', "user vehicle", "shot_lag"); */
+  /* options.shot_base_speed = stats_menu.optionval[8] = read_value(cfgfile, '@', "user vehicle", "shot_base_speed"); */
+  /* options.laser_length    = stats_menu.optionval[9] = read_value(cfgfile, '@', "user vehicle", "laser_length"); */
 
-  options.gravity            = read_value(cfgfile, '@', "user level", "gravity");
-  options.backdrop           = read_value(cfgfile, '@', "user level", "backdrop");
-  options.cloud_type         = read_value(cfgfile, '@', "user level", "cloud_type");
-  options.invincibility_life = read_value(cfgfile, '@', "options",    "invincibility_life");
-  options.explosion_speed    = read_value(cfgfile, '@', "options",    "explosion_speed");
-  options.coralie            = read_value(cfgfile, '@', "options",    "coralie_mode");
+  /* options.gravity            = read_value(cfgfile, '@', "user level", "gravity"); */
+  /* options.backdrop           = read_value(cfgfile, '@', "user level", "backdrop"); */
+  /* options.cloud_type         = read_value(cfgfile, '@', "user level", "cloud_type"); */
+  /* options.invincibility_life = read_value(cfgfile, '@', "options",    "invincibility_life"); */
+  /* options.explosion_speed    = read_value(cfgfile, '@', "options",    "explosion_speed"); */
+  /* options.coralie            = read_value(cfgfile, '@', "options",    "coralie_mode"); */
 
   fclose(cfgfile);
 
