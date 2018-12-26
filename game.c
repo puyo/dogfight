@@ -328,7 +328,10 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
   if (options->vehicle == 2)
     al_clear_to_color(al_map_rgb(0,255,0));
   else
-    al_draw_bitmap(dog->bg, 0, 0, 0);
+    al_draw_scaled_bitmap(dog->bg,
+            0, 0, al_get_bitmap_width(dog->bg), al_get_bitmap_height(dog->bg),
+            0, 0, dog->w, dog->h,
+            0);
 
   // draw planes and plane related objects (eg. shots, parachutes) on buffer
   for (count = 0; count < options->players; count++) {

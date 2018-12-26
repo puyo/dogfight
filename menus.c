@@ -198,7 +198,10 @@ void draw_menu(doginfo *dog, menuinfo *menu)
   int row = menu->row;
   int col = menu->col;
 
-  al_draw_bitmap(dog->title, 0, 0, 0);
+  al_draw_scaled_bitmap(dog->title,
+          0, 0, al_get_bitmap_width(dog->title), al_get_bitmap_height(dog->title),
+          0, 0, dog->w, dog->h,
+          0);
 
   if (menu->fontsize == 2) {
     for (count = 0; count <= menu->num_of_options-1; count++) {
