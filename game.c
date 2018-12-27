@@ -288,23 +288,38 @@ void draw_parachute(doginfo *dog, playerinfo *player, optionsinfo *options, char
       : dog->parafall;
 
     int flags = 0;
+
     // draw the parachute
     if (player[count].parachute.mirror > 2)
-      flags |= ALLEGRO_FLIP_VERTICAL;
+      flags |= ALLEGRO_FLIP_HORIZONTAL;
 
-    al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
-    al_draw_bitmap(para, player[count].parachute.x, player[count].parachute.y, flags);
+    int pw = al_get_bitmap_width(para);
+    int ph = al_get_bitmap_height(para);
+
     al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_INVERSE_ALPHA);
+    al_draw_scaled_rotated_bitmap(
+        para,
+        pw/2,
+        ph/2,
+        player[count].parachute.x,
+        player[count].parachute.y,
+        SCALE,
+        SCALE,
+        0,
+        flags
+        );
 
   } else {
     // splats
-    // TODO
-    /* drawing_mode(DRAW_MODE_TRANS, 0, 0, 0); */
-    /* for (blood_count = 0; blood_count < BLOOD; blood_count++) */
-    /*   circlefill(scrbuffer, player[count].parachute.blood[0][blood_count], */
-    /*              player[count].parachute.blood[1][blood_count], 1, */
-    /*              player[count].parachute.blood[4][blood_count]); */
-    /* drawing_mode(DRAW_MODE_SOLID, 0, 0, 0); */
+    ALLEGRO_COLOR red = al_map_rgb(255, 0, 20);
+    al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
+    for (blood_count = 0; blood_count < BLOOD; blood_count++) {
+      al_draw_filled_circle(
+          player[count].parachute.blood[0][blood_count],
+          player[count].parachute.blood[1][blood_count],
+          SHOT_HIT_RADIUS,
+          red);
+    }
   }
 }
 
@@ -376,16 +391,16 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
       paint(plane, player[count].colour);
       // draw the plane
       al_draw_scaled_rotated_bitmap(
-              plane,
-              al_get_bitmap_width(plane)/2,
-              al_get_bitmap_height(plane)/2,
-              player[count].x,
-              player[count].y,
-              SCALE,
-              SCALE,
-              angle,
-              flags
-              );
+          plane,
+          al_get_bitmap_width(plane)/2,
+          al_get_bitmap_height(plane)/2,
+          player[count].x,
+          player[count].y,
+          SCALE,
+          SCALE,
+          angle,
+          flags
+          );
       al_destroy_bitmap(plane);
 
       // optionally draw an explosion on top
@@ -396,15 +411,16 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
 
         al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
         al_draw_scaled_rotated_bitmap(
-                dog->explosion[explosion],
-                al_get_bitmap_width(dog->explosion[explosion])/2,
-                al_get_bitmap_height(dog->explosion[explosion])/2,
-                player[count].x,
-                player[count].y,
-                SCALE,
-                SCALE,
-                angle,
-                0);
+            dog->explosion[explosion],
+            al_get_bitmap_width(dog->explosion[explosion])/2,
+            al_get_bitmap_height(dog->explosion[explosion])/2,
+            player[count].x,
+            player[count].y,
+            SCALE,
+            SCALE,
+            angle,
+            0
+            );
 
         al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_INVERSE_ALPHA);
       }
@@ -415,9 +431,10 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
     if (player[count].parachute.status == HAPPY || player[count].parachute.status == WORRIED) {
       // debugging information
       // CIRCULAR HIT DETECTION CIRCLE
-      //circle(scrbuffer, player[count].parachute.x+PARACHUTE_SIZE_W/2,
-      //       player[count].parachute.y+PARACHUTE_SIZE_H/2, PARACHUTE_HIT_RADIUS,
-      //       GREEN+15);
+       /* al_draw_circle( */
+       /*     player[count].parachute.x, */
+       /*     player[count].parachute.y, */
+       /*     PARACHUTE_HIT_RADIUS, dog->white, 2); */
       draw_parachute(dog, &player[0], options, count);
     }
 
@@ -935,8 +952,7 @@ char move_planes(doginfo *dog, const ALLEGRO_KEYBOARD_STATE *kb, playerinfo *pla
 
       player[count].parachute.splatting = 1;
     }
-    else if (player[count].parachute.y >= dog->h
-             && player[count].parachute.status == HAPPY)
+    else if (player[count].parachute.y >= dog->h && player[count].parachute.status == HAPPY)
       player[count].parachute.status = SPLATTED;
 
     // calculate new coodinates, etc of blood spots
