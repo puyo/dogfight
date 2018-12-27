@@ -7,8 +7,8 @@
 #include "dogfight.h"
 
 // resolution
-const uint SET_W = 3*640;
-const uint SET_H = 3*480;
+const uint SET_W = SCALE*640;
+const uint SET_H = SCALE*480;
 
 // frames per second
 const float FPS = 60;
@@ -55,7 +55,7 @@ int main(int argc, char **argv){
     return -1;
   }
 
-  dog.font = al_load_ttf_font("data/font.ttf", SET_W/26, 0);
+  dog.font = al_load_ttf_font("data/font.ttf", SCALE*8, 0);
   if (!dog.font) {
     al_show_native_message_box(dog.display, "Error", "Error", "Failed to load font: data/font.ttf.", NULL, ALLEGRO_MESSAGEBOX_ERROR);
     return -1;

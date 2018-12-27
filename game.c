@@ -7,16 +7,16 @@
 #include "dogfight.h"
 
 
-#define PLANE_SIZE_W          32                  // }
-#define PLANE_SIZE_H          16                  // } these are set and should not
-#define SHOT_SIZE_W            4                  // } be fiddled with by mere mortals
-#define SHOT_SIZE_H            4                  // } (unless you know what you're doing)
-#define CLOUD_SIZE_W         300                  // }
-#define CLOUD_SIZE_H         200                  // }
-#define EXPLOSION_SIZE_W     128                  // }
-#define EXPLOSION_SIZE_H     128                  // }
-#define PARACHUTE_SIZE_W      32                  // }
-#define PARACHUTE_SIZE_H      32                  // }
+#define PLANE_SIZE_W          (SCALE*32)                  // }
+#define PLANE_SIZE_H          (SCALE*16)                  // } these are set and should not
+#define SHOT_SIZE_W            (SCALE*4)                  // } be fiddled with by mere mortals
+#define SHOT_SIZE_H            (SCALE*4)                  // } (unless you know what you're doing)
+#define CLOUD_SIZE_W         (SCALE*300)                  // }
+#define CLOUD_SIZE_H         (SCALE*200)                  // }
+#define EXPLOSION_SIZE_W     (SCALE*128)                  // }
+#define EXPLOSION_SIZE_H     (SCALE*128)                  // }
+#define PARACHUTE_SIZE_W      (SCALE*32)                  // }
+#define PARACHUTE_SIZE_H      (SCALE*32)                  // }
 
 #define MAX_PLAYERS            4
 
@@ -115,11 +115,37 @@ void randomize_array(int *array, int end, float rand_min, float rand_max)
 
 void draw_clouds(doginfo *dog, optionsinfo *options)
 {
+  const int cw = al_get_bitmap_width(dog->cloud);
+  const int ch = al_get_bitmap_height(dog->cloud);
+
   // function draws clouds onto the given bitmap
   // (or other objects that can be passed through)
   al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
-  al_draw_bitmap(dog->cloud, dog->w*1/4 - 100, dog->h*3/4 - 60, 0);
-  al_draw_bitmap(dog->cloud, dog->w*3/4 - 200, dog->h*1/4 - 60, 0);
+  al_draw_scaled_bitmap(
+      dog->cloud,
+      0,
+      0,
+      cw,
+      ch,
+      dog->w*1/4 - SCALE*cw/2,
+      dog->h*3/4 - SCALE*ch/2,
+      SCALE*cw,
+      SCALE*ch,
+      0);
+
+  al_draw_scaled_bitmap(
+      dog->cloud,
+      0,
+      0,
+      cw,
+      ch,
+      dog->w*3/4 - SCALE*cw/2,
+      dog->h*1/4 - SCALE*ch/2,
+      SCALE*cw,
+      SCALE*ch,
+      0);
+
+  /* al_draw_scaled_bitmap(dog->cloud, dog->w*3/4 - 200, dog->h*1/4 - 60, 0); */
   al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_INVERSE_ALPHA);
 }
 
@@ -321,7 +347,7 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
   // function draws the game screen
 
   float angle;
-  char explosion;
+  int explosion;
   int count;
 
   // clear screen buffer to the background
@@ -343,16 +369,23 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
 
       // debugging information
       // CIRCULAR HIT DETECTION CIRCLE
-      al_draw_circle(player[count].x, player[count].y,
-                     PLANE_HIT_RADIUS, dog->white, 2);
+      /* al_draw_circle(player[count].x, player[count].y, */
+      /*                PLANE_HIT_RADIUS, dog->white, 2); */
 
       ALLEGRO_BITMAP *plane = al_clone_bitmap(dog->plane[options->vehicle]);
       paint(plane, player[count].colour);
       // draw the plane
-      al_draw_rotated_bitmap(plane,
-                             PLANE_SIZE_W/2, PLANE_SIZE_H/2,
-                             player[count].x, player[count].y,
-                             angle, flags);
+      al_draw_scaled_rotated_bitmap(
+              plane,
+              al_get_bitmap_width(plane)/2,
+              al_get_bitmap_height(plane)/2,
+              player[count].x,
+              player[count].y,
+              SCALE,
+              SCALE,
+              angle,
+              flags
+              );
       al_destroy_bitmap(plane);
 
       // optionally draw an explosion on top
@@ -362,10 +395,17 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
           explosion = 8;
 
         al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
-        al_draw_rotated_bitmap(dog->explosion[explosion],
-                               EXPLOSION_SIZE_W/2, EXPLOSION_SIZE_H/2,
-                               player[count].x, player[count].y,
-                               angle, 0);
+        al_draw_scaled_rotated_bitmap(
+                dog->explosion[explosion],
+                al_get_bitmap_width(dog->explosion[explosion])/2,
+                al_get_bitmap_height(dog->explosion[explosion])/2,
+                player[count].x,
+                player[count].y,
+                SCALE,
+                SCALE,
+                angle,
+                0);
+
         al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_INVERSE_ALPHA);
       }
       // draw any shots

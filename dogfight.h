@@ -8,6 +8,8 @@
 #include <allegro5/allegro_native_dialog.h>
 #include <allegro5/allegro_primitives.h>
 
+#define SCALE 3
+
 typedef struct doginfo {
   ALLEGRO_DISPLAY *display;
   ALLEGRO_EVENT_QUEUE *event_queue;
