@@ -27,6 +27,8 @@
 // is no longer drawn underneath (and is null)
 #define SPLAT_LIFE            40
 
+#define EXPLOSION_TICKS       30
+
 // variable level constants
 #define PARA_VELOCITY          6                  // parachute terminal velocity
 
@@ -80,7 +82,7 @@ typedef struct playerinfo {
   ALLEGRO_COLOR colour;
   char flip;
   char status;
-  float exploding;
+  int exploding;
   char invincible;
   char kills[5];              // room for total kills
   shotinfo shot[256];  // room for up to 256 shots
@@ -361,7 +363,6 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
   // function draws the game screen
 
   float angle;
-  int explosion;
   unsigned int count;
 
   // clear screen buffer to the background
@@ -403,16 +404,15 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
       al_destroy_bitmap(plane);
 
       // optionally draw an explosion on top
-      if (false && player[count].exploding && player[count].exploding < 10) {
-        explosion = player[count].exploding - 1;
-        if (explosion >= 8)
-          explosion = 8;
+      if (player[count].exploding && player[count].exploding < EXPLOSION_TICKS) {
+        int i = ( 8 * player[count].exploding / EXPLOSION_TICKS ) % 8;
+        ALLEGRO_BITMAP *bmp = dog->explosion[i];
 
         al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
         al_draw_scaled_rotated_bitmap(
-            dog->explosion[explosion],
-            al_get_bitmap_width(dog->explosion[explosion])/2,
-            al_get_bitmap_height(dog->explosion[explosion])/2,
+            bmp,
+            al_get_bitmap_width(bmp)/2,
+            al_get_bitmap_height(bmp)/2,
             player[count].x,
             player[count].y,
             SCALE,
@@ -441,12 +441,21 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
       al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_ONE);
       // draw an explosion *instead* of the plane
       // goes last to 'cover' parachutes etc
-      explosion = player[count].exploding-1;
+      int i = ( 8 * player[count].exploding / EXPLOSION_TICKS ) % 8;
+      ALLEGRO_BITMAP *bmp = dog->explosion[i];
       angle = player[count].heading;
-      al_draw_rotated_bitmap(dog->explosion[explosion],
-                             EXPLOSION_SIZE_W/2, EXPLOSION_SIZE_H/2,
-                             player[count].x, player[count].y,
-                             angle, 0);
+
+      al_draw_scaled_rotated_bitmap(
+          bmp,
+          al_get_bitmap_width(bmp)/2,
+          al_get_bitmap_height(bmp)/2,
+          player[count].x,
+          player[count].y,
+          SCALE,
+          SCALE,
+          angle,
+          0
+          );
       al_set_blender(ALLEGRO_ADD, ALLEGRO_ONE, ALLEGRO_INVERSE_ALPHA);
     }
   }
@@ -878,7 +887,7 @@ char move_planes(doginfo *dog, const ALLEGRO_KEYBOARD_STATE *kb, playerinfo *pla
     // explosions "wear off"
     if (player[count].exploding)
       player[count].exploding += 1;
-    if (player[count].exploding >= 10) {
+    if (player[count].exploding >= EXPLOSION_TICKS) {
       player[count].exploding = 0;
       player[count].status = GONE;
     }
