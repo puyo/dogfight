@@ -196,7 +196,14 @@ void draw_stats(doginfo *dog, playerinfo *player, optionsinfo *options)
     // print the kills data
     for (kill_count = 0; kill_count <= options->players; kill_count++) {
       snprintf(kills_string[kill_count], 30, "%d", player[count].kills[kill_count]);
-      al_draw_text(dog->font, dog->white, count * dog->w/options->players + kill_count*24, 9+8, 0, kills_string[kill_count]);
+      al_draw_text(
+          dog->font,
+          dog->white,
+          count * dog->w/options->players + kill_count*24*SCALE,
+          9+8*SCALE,
+          0,
+          kills_string[kill_count]
+          );
     }
 
     // print status - debugging information
