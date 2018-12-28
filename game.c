@@ -344,11 +344,32 @@ void draw_shots(doginfo *dog, playerinfo *player, optionsinfo *options, char cou
       if (options->vehicle == 0 || options->vehicle == 2) {
         x = player[count].shot[shot_count].x+SHOT_SIZE_W/2;
         y = player[count].shot[shot_count].y+SHOT_SIZE_H/2;
-        al_draw_filled_circle(x, y, SHOT_HIT_RADIUS, dog->white);
+
+        // shot.life goes from shot_life at max to 0
+        int intensity = 127 + 128 * player[count].shot[shot_count].life / options->shot_life;
+
+        ALLEGRO_COLOR col_inner = al_map_rgb(intensity, 64, 0);
+        ALLEGRO_COLOR col_outer = al_map_rgb(255, 255, 0);
+
+        al_draw_filled_circle(
+            x,
+            y,
+            SHOT_HIT_RADIUS,
+            col_inner
+            );
+
+        al_draw_circle(
+            x,
+            y,
+            SHOT_HIT_RADIUS,
+            col_outer,
+            1);
+
         /* circlefill(scrbuffer, x, y, SHOT_HIT_RADIUS, */
         /*            ORANGE - (player[count].shot[shot_count].life * (ORANGE-RED)/options->shot_life)); */
         /* circle(scrbuffer, x, y, SHOT_HIT_RADIUS, */
         /*        RED + (player[count].shot[shot_count].life * RED/options->shot_life)); */
+
       } else if (options->vehicle == 1) {
         // here x and y store the second point of the 'laser line'
         x = player[count].shot[shot_count].x
@@ -357,7 +378,14 @@ void draw_shots(doginfo *dog, playerinfo *player, optionsinfo *options, char cou
         y = player[count].shot[shot_count].y
           + sin(player[count].shot[shot_count].heading)
           * player[count].shot[shot_count].laser_length;
-        al_draw_line(player[count].shot[shot_count].x, player[count].shot[shot_count].y, x, y, dog->white, 2);
+        al_draw_line(
+            player[count].shot[shot_count].x,
+            player[count].shot[shot_count].y,
+            x,
+            y,
+            dog->white,
+            2
+            );
       }
     }
   }
