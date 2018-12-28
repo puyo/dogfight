@@ -281,12 +281,11 @@ void paint(ALLEGRO_BITMAP *sprite, ALLEGRO_COLOR colour_new)
 
 
 
-void draw_parachute(doginfo *dog, playerinfo *player, optionsinfo *options, char count)
+void draw_parachute(doginfo *dog, playerinfo *player, optionsinfo *options, unsigned int count)
 {
   // function draws parachutes and splats
 
   int blood_count;
-  char kills_string[10][50];
 
   if (!player[count].parachute.splatting) {
     // parachutes
@@ -334,9 +333,9 @@ void draw_parachute(doginfo *dog, playerinfo *player, optionsinfo *options, char
 
 
 
-void draw_shots(doginfo *dog, playerinfo *player, optionsinfo *options, char count)
+void draw_shots(doginfo *dog, playerinfo *player, optionsinfo *options, unsigned int count)
 {
-  char shot_count;
+  unsigned int shot_count;
   int x, y;
 
   for (shot_count = 0; shot_count < options->num_of_shots; shot_count++) {
@@ -504,7 +503,7 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
 
 
 
-void explode_player(struct playerinfo *player, char player_count)
+void explode_player(struct playerinfo *player, unsigned int player_count)
 {
   // function blows the sucker up!
   // looks meek, but certain other things used to be done here and
@@ -541,8 +540,7 @@ void detect_collisions(doginfo *dog, playerinfo *player, optionsinfo *options)
 {
   // function checks to see if any planes or shots overlap to a certain extent
 
-  char plane_count, check_count, shot_count;
-  int shot_x2, shot_y2, n;
+  unsigned int plane_count, check_count, shot_count;
 
   for (plane_count = 0; plane_count < options->players; plane_count++) {
 
@@ -650,9 +648,9 @@ void detect_collisions(doginfo *dog, playerinfo *player, optionsinfo *options)
 
 
 
-void reset_plane(playerinfo *player, char count, optionsinfo *options)
+void reset_plane(playerinfo *player, unsigned int count, optionsinfo *options)
 {
-  char shot_count;
+  unsigned int shot_count;
 
   player[count].status = NORMAL;
   if (options->min_speed < 0)
@@ -1025,7 +1023,7 @@ void game(doginfo *dog, optionsinfo *options)
   // them regardless of how many players participate
   playerinfo player[4];
 
-  char count, countdown, end;
+  unsigned int count, countdown;
   char countdown_string[3];
 
   // reset game variables that may have been changed from previous games
@@ -1056,6 +1054,7 @@ void game(doginfo *dog, optionsinfo *options)
   ALLEGRO_KEYBOARD_STATE kb;
   bool redraw = true;
 
+  bool end = false;
   while (!end) {
     ALLEGRO_EVENT ev;
     al_wait_for_event(dog->event_queue, &ev);
