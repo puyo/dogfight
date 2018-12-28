@@ -162,31 +162,50 @@ void draw_stats(doginfo *dog, playerinfo *player, optionsinfo *options)
   unsigned int count, kill_count;
   char speed_string[30];
   char kills_string[options->players][30];
+  int pad = 4*SCALE;
+  int height = 10*SCALE;
+  int border = 2;
 
   speed_dif = options->max_speed - options->min_speed;
   meter_len = dog->w/options->players;
+
   for (count = 0; count < options->players; count++) {
     // draw speed meters
-    meter_bar_start = count * meter_len;
+    meter_bar_start = pad + (meter_len - 4) * count;
 
-    // TODO
+    al_draw_rectangle(
+        meter_bar_start + pad, pad,
+        meter_bar_start + meter_len - pad, pad + height - border,
+        dog->white,
+        border);
+
     //rect(scrbuffer, meter_bar_start,   7, meter_bar_start   + meter_len-1 , 17, PAL_DIFFERENCE*(count+2) + 2);
     //rect(scrbuffer, meter_bar_start+1, 8, meter_bar_start+1 + meter_len-2 , 16, PAL_DIFFERENCE*(count+2) + 7);
 
     if (options->min_speed < 0) {
-      meter_start = (meter_bar_start+2)-(meter_len-4)*options->min_speed/speed_dif;
-      // TODO
+      meter_start = (meter_bar_start + pad) - (meter_len - pad)*options->min_speed/speed_dif;
+
+      al_draw_filled_rectangle(
+          meter_start, pad + 2,
+          meter_start + (meter_len - pad)*player[count].speed/speed_dif, pad + height - border*2,
+          player[count].colour);
+
       //rectfill(scrbuffer, meter_start, 9, meter_start + (meter_len-4)*player[count].speed/speed_dif, 16, PAL_DIFFERENCE*(count+2) + 12);
     }
     else {
-      meter_start = (meter_bar_start+2);
-      // TODO
+      meter_start = meter_bar_start + pad;
+
+      al_draw_filled_rectangle(
+          meter_start + border, pad + border,
+          meter_start + (meter_len - 2*pad - 2*border)*player[count].speed/options->max_speed, pad + height - border*2,
+          player[count].colour);
+
       //rectfill(scrbuffer, meter_start, 9, meter_start + (meter_len-4)*player[count].speed/options->max_speed, 16, PAL_DIFFERENCE*(count+2) + 12);
     }
 
     // print the actual speed on top of each bar
     sprintf(speed_string, "%2.1f", player[count].speed);
-    al_draw_text(dog->font, dog->white, count * dog->w/options->players + 8, 9, 0, speed_string);
+    al_draw_text(dog->font, dog->white, count * dog->w/options->players + 3*pad, pad + border, 0, speed_string);
 
     // calculate the total kills
     player[count].kills[options->players] = 0;
@@ -199,8 +218,8 @@ void draw_stats(doginfo *dog, playerinfo *player, optionsinfo *options)
       al_draw_text(
           dog->font,
           dog->white,
-          count * dog->w/options->players + kill_count*24*SCALE,
-          9+8*SCALE,
+          2*pad + count * dog->w/options->players + kill_count*24*SCALE,
+          pad + height + pad,
           0,
           kills_string[kill_count]
           );
