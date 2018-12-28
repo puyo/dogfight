@@ -157,10 +157,9 @@ void draw_stats(doginfo *dog, playerinfo *player, optionsinfo *options)
   // (and any other information needed)
 
   int meter_bar_start, meter_start, meter_len, speed_dif;
-  char count, shot_count, kill_count;
+  unsigned int count, kill_count;
   char speed_string[30];
   char kills_string[options->players][30];
-  char shot_string[options->players][30];
 
   speed_dif = options->max_speed - options->min_speed;
   meter_len = dog->w/options->players;
@@ -363,7 +362,7 @@ void draw_screen(doginfo *dog, playerinfo *player, optionsinfo *options)
 
   float angle;
   int explosion;
-  int count;
+  unsigned int count;
 
   // clear screen buffer to the background
   if (options->vehicle == 2)
@@ -642,7 +641,7 @@ void reset_plane(playerinfo *player, char count, optionsinfo *options)
 
 void initiate_variables(doginfo *dog, playerinfo *player, optionsinfo *options)
 {
-  char count, sub_count;
+  unsigned int count, sub_count;
 
   // function sets options defaults (these override options read from the cfg file)
   // therefore what they should do is *use* the options stucture so that
@@ -738,8 +737,7 @@ char move_planes(doginfo *dog, const ALLEGRO_KEYBOARD_STATE *kb, playerinfo *pla
   // function checks to see what keys are being pressed and moves
   // the planes appropriately
 
-  char count, shot_count, shot_check, last_shot;
-  int c, count_x, count_y, blood_count;
+  unsigned int count, shot_count, shot_check, last_shot, blood_count;
   float rand_min, rand_max;
 
   for (count = 0; count < options->players; count++) {
@@ -927,30 +925,32 @@ char move_planes(doginfo *dog, const ALLEGRO_KEYBOARD_STATE *kb, playerinfo *pla
     if (player[count].parachute.y >= dog->h
         && player[count].parachute.status == WORRIED
         && !player[count].parachute.splatting) {
-      // fill the array with appropriate random numbers (coodinates of blood spots, etc)
-      // x
-      rand_min = player[count].parachute.x + PARACHUTE_SIZE_W * 1/3;
-      rand_max = player[count].parachute.x + PARACHUTE_SIZE_W * 2/3;
-      randomize_array(&player[count].parachute.blood[0][0], BLOOD, rand_min, rand_max);
-      // y
-      rand_min = player[count].parachute.y + PARACHUTE_SIZE_H * 1/3;
-      rand_max = player[count].parachute.y + PARACHUTE_SIZE_H * 2/3;
-      randomize_array(&player[count].parachute.blood[1][0], BLOOD, rand_min, rand_max);
-      // x vel
-      rand_min = player[count].parachute.speed * GORE_LEVEL * -0.2;
-      rand_max = player[count].parachute.speed * GORE_LEVEL *  0.2;
-      randomize_array(&player[count].parachute.blood[2][0], BLOOD, rand_min, rand_max);
-      // y vel
-      rand_min = player[count].parachute.speed * GORE_LEVEL * -0.5;
-      rand_max = player[count].parachute.speed * GORE_LEVEL * -0.25;
-      randomize_array(&player[count].parachute.blood[3][0], BLOOD, rand_min, rand_max);
-      // colour
-      rand_min = 0;
-      rand_max = 15;
-      //srandom(player[count].parachute.speed+2);
-      randomize_array(&player[count].parachute.blood[4][0], BLOOD, rand_min, rand_max);
 
-      player[count].parachute.splatting = 1;
+        if (options->coralie) {
+          // fill the array with appropriate random numbers (coodinates of blood spots, etc)
+          // x
+          rand_min = player[count].parachute.x + PARACHUTE_SIZE_W * 1/3;
+          rand_max = player[count].parachute.x + PARACHUTE_SIZE_W * 2/3;
+          randomize_array(&player[count].parachute.blood[0][0], BLOOD, rand_min, rand_max);
+          // y
+          rand_min = player[count].parachute.y + PARACHUTE_SIZE_H * 1/3;
+          rand_max = player[count].parachute.y + PARACHUTE_SIZE_H * 2/3;
+          randomize_array(&player[count].parachute.blood[1][0], BLOOD, rand_min, rand_max);
+          // x vel
+          rand_min = player[count].parachute.speed * GORE_LEVEL * -0.2;
+          rand_max = player[count].parachute.speed * GORE_LEVEL *  0.2;
+          randomize_array(&player[count].parachute.blood[2][0], BLOOD, rand_min, rand_max);
+          // y vel
+          rand_min = player[count].parachute.speed * GORE_LEVEL * -0.5;
+          rand_max = player[count].parachute.speed * GORE_LEVEL * -0.25;
+          randomize_array(&player[count].parachute.blood[3][0], BLOOD, rand_min, rand_max);
+          // colour
+          rand_min = 0;
+          rand_max = 15;
+          //srandom(player[count].parachute.speed+2);
+          randomize_array(&player[count].parachute.blood[4][0], BLOOD, rand_min, rand_max);
+        }
+        player[count].parachute.splatting = 1;
     }
     else if (player[count].parachute.y >= dog->h && player[count].parachute.status == HAPPY)
       player[count].parachute.status = SPLATTED;

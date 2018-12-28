@@ -30,26 +30,26 @@ typedef struct doginfo {
 } doginfo;
 
 typedef struct optionsinfo {
-  char vehicle;
-  char backdrop;
-  char players;
+  unsigned int vehicle;
+  unsigned int backdrop;
+  unsigned int players;
 
   float turn_speed;
   float acceleration;
-  char min_speed;
-  char max_speed;
-  char num_of_shots;
-  char shot_lag;
-  char shot_life;
-  char shot_base_speed;
-  char laser_length;
+  unsigned int min_speed;
+  unsigned int max_speed;
+  unsigned int num_of_shots;
+  unsigned int shot_lag;
+  unsigned int shot_life;
+  unsigned int shot_base_speed;
+  unsigned int laser_length;
 
   float gravity;
-  char invincibility_life;
+  unsigned int invincibility_life;
   float explosion_speed;
-  char cloud_type;
+  unsigned int cloud_type;
 
-  char coralie;
+  bool coralie;
 } optionsinfo;
 
 
